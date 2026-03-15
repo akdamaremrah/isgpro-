@@ -2852,8 +2852,9 @@ def get_notifications():
 
     return jsonify(notifications[:50]), 200
 
+setup_db()
+
 if __name__ == '__main__':
-    setup_db()
     with app.app_context():
         _migrate_training_docs_to_year_folders()
     port = int(os.environ.get('PORT', 5000))
