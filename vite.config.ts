@@ -24,4 +24,9 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    // Render'da vite preview'in tüm host'lara izin vermesi için
+    allowedHosts: 'all',
+    host: '0.0.0.0',
+  },
 })
