@@ -8,9 +8,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port $PORT"
+    "start": "serve -s dist -l $PORT"
   },
   "dependencies": {
+    "serve": "^14.2.4",
     "@tanstack/react-query": "^5.90.21",
     "clsx": "^2.1.1",
     "framer-motion": "^12.35.2",
