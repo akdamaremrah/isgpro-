@@ -266,8 +266,8 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChang
                         </thead>
                         <tbody>
                             {filteredEmployees.map((emp) => {
-                                const isEduExpired = emp.trainingValidityDate && new Date(emp.trainingValidityDate) < new Date();
-                                const isHealthExpired = emp.healthValidityDate && new Date(emp.healthValidityDate) < new Date();
+                                const _isEduExpired = emp.trainingValidityDate && new Date(emp.trainingValidityDate) < new Date();
+                                const _isHealthExpired = emp.healthValidityDate && new Date(emp.healthValidityDate) < new Date();
 
                                 return (
                                     <tr
