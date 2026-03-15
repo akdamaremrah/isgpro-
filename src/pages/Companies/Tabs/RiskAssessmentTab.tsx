@@ -254,7 +254,6 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
 
     if (loading) return <div className={styles.loading}>Yükleniyor...</div>;
 
-    const _validityYears = companyInfo ? getValidityYears(companyInfo.tehlikeSinifi) : null;
     const isValidityExpired = validityDate ? new Date(validityDate) < new Date() : false;
 
     return (
