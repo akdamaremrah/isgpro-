@@ -1,0 +1,238 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.uploadBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--gradient-accent);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-accent);
+}
+
+.uploadBtn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-accent-lg);
+}
+
+.alertBanner {
+    background-color: var(--danger-light);
+    color: var(--danger-dark);
+    border-left: 4px solid var(--danger);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.docCard {
+    background: var(--gradient-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.docCard:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.cardTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.iconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    background: var(--accent-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fileIcon {
+    color: var(--accent);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.statusBadge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+}
+
+.badgeSuccess {
+    background-color: var(--success-light);
+    color: var(--success-dark);
+}
+
+.badgeWarning {
+    background-color: var(--warning-light);
+    color: var(--warning-dark);
+}
+
+.badgeDanger {
+    background-color: var(--danger-light);
+    color: var(--danger-dark);
+}
+
+.menuBtn {
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menuBtn:hover {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.cardMid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.docName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.categoryName {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.cardBottom {
+    background-color: var(--bg-main);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+}
+
+.infoLabel {
+    color: var(--text-secondary);
+}
+
+.infoValue {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.textDanger {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.btnIconText,
+.btnIconTextPrimary {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.btnIconText {
+    color: var(--text-secondary);
+}
+
+.btnIconText:hover {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.btnIconTextPrimary {
+    color: var(--accent);
+}
+
+.btnIconTextPrimary:hover {
+    background-color: var(--accent-muted);
+}

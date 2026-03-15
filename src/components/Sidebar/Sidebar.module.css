@@ -1,0 +1,356 @@
+.sidebar {
+    height: 100vh;
+    background: var(--gradient-sidebar);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    transition: width var(--transition-normal);
+    overflow: visible;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    border-right: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.open {
+    width: var(--sidebar-width);
+}
+
+.collapsed {
+    width: var(--sidebar-width-collapsed);
+}
+
+.logoSection {
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+    background: rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.collapsed .logoSection {
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+}
+
+.collapsed .logoIcon {
+    width: 40px;
+    height: 40px;
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+.collapsed .logoIcon:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 0 30px rgba(0, 240, 255, 0.6),
+        0 0 60px rgba(99, 102, 241, 0.25),
+        inset 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.logoIcon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle at 30% 30%, rgba(0, 240, 255, 0.15) 0%, rgba(99, 102, 241, 0.1) 50%, transparent 70%);
+    border-radius: 14px;
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    box-shadow:
+        0 0 20px rgba(0, 240, 255, 0.3),
+        0 0 40px rgba(99, 102, 241, 0.15),
+        inset 0 0 15px rgba(0, 240, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.logoIcon:hover {
+    border-color: rgba(0, 240, 255, 0.5);
+    box-shadow:
+        0 0 30px rgba(0, 240, 255, 0.5),
+        0 0 60px rgba(99, 102, 241, 0.25),
+        inset 0 0 20px rgba(0, 240, 255, 0.1);
+    transform: scale(1.08);
+}
+
+.logoSvg {
+    z-index: 1;
+    animation: logoRotate 20s linear infinite;
+}
+
+@keyframes logoRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.logoPulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    animation: logoPulseAnim 2.5s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes logoPulseAnim {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.4);
+    }
+}
+
+.logoFlash {
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 40%;
+    height: 200%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.4) 45%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0.4) 55%,
+        transparent 70%
+    );
+    animation: logoFlashAnim 3s ease-in-out infinite;
+    z-index: 2;
+    pointer-events: none;
+}
+
+@keyframes logoFlashAnim {
+    0% {
+        left: -60%;
+    }
+    30% {
+        left: 120%;
+    }
+    100% {
+        left: 120%;
+    }
+}
+
+.logoTextWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    position: relative;
+}
+
+.logoText {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: white;
+    white-space: nowrap;
+    letter-spacing: 0.12em;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    position: relative;
+}
+
+.logoLetters {
+    background: linear-gradient(
+        90deg,
+        #00f0ff 0%,
+        #ffffff 20%,
+        #00f0ff 40%,
+        #c084fc 60%,
+        #ffffff 80%,
+        #00f0ff 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: holoShift 4s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.4));
+    position: relative;
+}
+
+.logoLetters::after {
+    content: 'İSG';
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0, 240, 255, 0.3) 50%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: scanLine 2s ease-in-out infinite;
+}
+
+@keyframes holoShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+@keyframes scanLine {
+    0%, 100% { background-position: -100% 0; opacity: 0; }
+    50% { background-position: 200% 0; opacity: 1; }
+}
+
+.logoGradient {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(
+        135deg,
+        #818cf8 0%,
+        #00f0ff 25%,
+        #c084fc 50%,
+        #00f0ff 75%,
+        #818cf8 100%
+    );
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: prismShift 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.5));
+}
+
+@keyframes prismShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.logoPlus {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    color: transparent;
+    background: linear-gradient(180deg, #00f0ff 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-left: 1px;
+    position: relative;
+    animation: plusFlicker 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.7));
+}
+
+@keyframes plusFlicker {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.7)); }
+    25% { opacity: 0.9; filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.9)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.8)); }
+    75% { opacity: 0.85; filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.8)); }
+}
+
+.menuContainer {
+    flex: 1;
+    padding: 1.5rem 0.75rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    clip-path: inset(0);
+}
+
+.menuLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.75rem;
+    padding-left: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.navMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-lg);
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: var(--transition-all);
+    white-space: nowrap;
+    position: relative;
+}
+
+.navItem:hover {
+    background: rgba(99, 102, 241, 0.15);
+    color: white;
+}
+
+.active {
+    background: var(--gradient-accent) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    margin-right: 1rem;
+}
+
+.navText {
+    font-size: 0.875rem;
+}
+
+.bottomSection {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.15);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.collapseBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: -17px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 50%;
+    transition: var(--transition-all);
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.collapseBtn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: scale(1.05);
+}

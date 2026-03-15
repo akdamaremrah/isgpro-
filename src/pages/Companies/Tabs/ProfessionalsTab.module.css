@@ -1,0 +1,561 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.addBtn {
+    background: var(--gradient-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-accent);
+}
+
+.addBtn:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-accent-lg);
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.profCard {
+    background: var(--gradient-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.profCard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatarWrapper {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid var(--bg-surface);
+}
+
+.avatarImgSmall {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profInfo {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.profName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profRole {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.cardDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border-light);
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detailLabel {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.detailValue {
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+}
+
+.cardActions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+
+.actionBtn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Modal Core Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+    animation: fadeInModal 0.2s ease;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modalContent {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    width: 450px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modalHeader h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.modalBody {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.formGroup label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.input,
+.select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.modalActions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.btnPrimary {
+    background: var(--gradient-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-accent);
+}
+
+.btnSecondary {
+    background-color: transparent;
+    border: 1px solid var(--border-light);
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+/* --- DETAIL MODAL & INLINE EDIT --- */
+
+/* Suggestion dropdown */
+.suggestionList {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 20;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    margin-top: 2px;
+}
+
+.suggestionItem {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.suggestionItem:hover {
+    background: var(--bg-hover);
+}
+
+.suggestionName {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.suggestionMeta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.detailModal {
+    background-color: var(--bg-surface);
+    width: 90%;
+    max-width: 520px;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlide {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.detailHeader {
+    background: linear-gradient(135deg, var(--bg-surface), var(--bg-main));
+    padding: 2.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.closeDetailBtn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.photoContainer {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 4px solid var(--bg-surface);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 1rem;
+    background-color: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detailProfileImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photoHoverOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.photoContainer:hover .photoHoverOverlay {
+    opacity: 1;
+}
+
+.detailTitleArea {
+    text-align: center;
+}
+
+.detailTitleArea h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.detailTitleArea span {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detailBody {
+    padding: 1.5rem;
+}
+
+.autoTimeBox {
+    background-color: rgba(30, 64, 175, 0.04);
+    border: 1px solid var(--primary-light);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.autoTimeLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.autoTimeValue {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.inlineGrid {
+    display: flex;
+    flex-direction: column;
+}
+
+.inlineRow {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+    min-height: 54px;
+}
+
+.inlineRow:last-child {
+    border-bottom: none;
+}
+
+.inlineLabel {
+    flex: 0 0 140px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.inlineContentArea {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.inlineDisplayGroup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+}
+
+.inlineDisplayGroup:hover {
+    background-color: var(--bg-main);
+}
+
+.inlineValue {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.inlineEditIcon {
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: transparent;
+    border: none;
+}
+
+.inlineDisplayGroup:hover .inlineEditIcon {
+    opacity: 1;
+}
+
+.inlineEditGroup {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    align-items: center;
+}
+
+.inlineInput {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.inlineSaveBtn,
+.inlineCancelBtn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+.inlineSaveBtn {
+    background-color: var(--success);
+    color: white;
+}
+
+.inlineCancelBtn {
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+}

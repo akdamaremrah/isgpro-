@@ -1,0 +1,617 @@
+[
+    {
+        "category": "Ofis Çalışmaları",
+        "icon": "Monitor",
+        "items": [
+            {
+                "activity": "Bilgisayar ile uzun süreli çalışma",
+                "hazard": "Uzun süre ekran karşısında hareketsiz oturma",
+                "risk": "Kas-iskelet sistemi rahatsızlıkları, bel-boyun fıtığı, görme bozuklukları",
+                "default_O": 6,
+                "default_S": 3,
+                "default_F": 10,
+                "measures": "Ergonomik sandalye ve masa kullanımı, saat başı 5-10 dk mola, monitör göz hizasında konumlandırılmalı"
+            },
+            {
+                "activity": "Ofis içi kablo düzeni",
+                "hazard": "Yere serili dağınık kablolar, uzatma kabloları",
+                "risk": "Takılma, düşme, burkulmalar",
+                "default_O": 3,
+                "default_S": 3,
+                "default_F": 6,
+                "measures": "Kablo kanalları kullanılması, kablolar sabitlenmeli, düzenli kontrol"
+            },
+            {
+                "activity": "Ofis içi aydınlatma",
+                "hazard": "Yetersiz veya aşırı aydınlatma, titreşen lambalar",
+                "risk": "Göz yorgunluğu, baş ağrısı, iş veriminde düşüş",
+                "default_O": 3,
+                "default_S": 1,
+                "default_F": 6,
+                "measures": "500 Lux aydınlatma standardına uygun aydınlatma, anti-glare filtre kullanımı"
+            },
+            {
+                "activity": "Ofis havalandırma sistemi",
+                "hazard": "Yetersiz havalandırma, klima bakımsızlığı",
+                "risk": "Solunum yolu enfeksiyonları, Sick Building Sendromu",
+                "default_O": 3,
+                "default_S": 3,
+                "default_F": 3,
+                "measures": "Klima filtrelerinin periyodik temizliği, doğal havalandırma imkânı"
+            },
+            {
+                "activity": "Ofis mobilya ve dolapları",
+                "hazard": "Duvara sabitlenmemiş dolaplar, cam yüzeyler",
+                "risk": "Dolap devrilmesi, cam kırılması sonucu yaralanma",
+                "default_O": 1,
+                "default_S": 7,
+                "default_F": 1,
+                "measures": "Dolapların duvara montajı, deprem sabitleme kelepçeleri, temperli cam kullanımı"
+            }
+        ]
+    },
+    {
+        "category": "Elektrik İşleri ve Tesisatı",
+        "icon": "Zap",
+        "items": [
+            {
+                "activity": "Elektrik panoları ve tesisat bakımı",
+                "hazard": "Açık pano kapakları, izolasyon bozukluğu, eksik etiketleme",
+                "risk": "Elektrik çarpması, yanık, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Pano kilitli tutulmalı, uyarı levhaları asılmalı, yetkisiz erişim önlenmeli, yıllık periyodik kontrol"
+            },
+            {
+                "activity": "Kaçak akım rölesi (KAR) kontrolü",
+                "hazard": "KAR yokluğu veya arızalı KAR",
+                "risk": "Elektrik çarpması, kalp durması, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Tüm devrelere KAR takılması, aylık test butonu kontrolü, arızalı olanların değiştirilmesi"
+            },
+            {
+                "activity": "Topraklama sistemi",
+                "hazard": "Yetersiz veya hasarlı topraklama, topraklama direnci yüksek",
+                "risk": "Elektrik çarpması, ekipman hasarı",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Yıllık topraklama ölçümü yapılmalı, topraklama direnci <10 ohm olmalı"
+            },
+            {
+                "activity": "Yetkisiz elektrik müdahalesi",
+                "hazard": "Eğitimsiz personelin elektrik tesisatına müdahalesi",
+                "risk": "Elektrik çarpması, kısa devre, yangın, ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Sadece yetkili elektrikçi müdahale etmeli, LOTO prosedürü uygulanmalı"
+            },
+            {
+                "activity": "Aşırı yüklenmiş prizler ve uzatma kabloları",
+                "hazard": "Çoklu fiş kullanımı, aşırı akım çekilmesi",
+                "risk": "Kısa devre, yangın, kablo yangını",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "Her cihaz için ayrı priz hattı, multiplug yasaklanması, sigorta kapasitesi kontrolü"
+            }
+        ]
+    },
+    {
+        "category": "Yüksekte Çalışma",
+        "icon": "ArrowUpFromLine",
+        "items": [
+            {
+                "activity": "İskele üzerinde çalışma",
+                "hazard": "Standart dışı iskele kurulumu, korkuluk eksikliği",
+                "risk": "Yüksekten düşme, ağır yaralanma, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "TS EN 12811 standardına uygun iskele, tam vücut emniyet kemeri, iskele kurulum kontrol formu"
+            },
+            {
+                "activity": "Çatı üzerinde çalışma",
+                "hazard": "Korunmasız kenarlar, kırılgan çatı malzemesi",
+                "risk": "Düşme, çatı çökme, ölüm",
+                "default_O": 6,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Yaşam halatı sistemi, paraşüt tipi emniyet kemeri, kenar korkulukları"
+            },
+            {
+                "activity": "Portatif merdiven kullanımı",
+                "hazard": "Uygun açıda konumlandırılmamış, hasarlı merdiven",
+                "risk": "Merdiven kayması, düşme, kırıklar",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "75° açı kuralı, kaymaz taban, merdiven alttan sabitlenmeli, 3 nokta temas kuralı"
+            },
+            {
+                "activity": "Asma kat ve platform kenarları",
+                "hazard": "Korkuluksuz platform kenarları, yetersiz aydınlatma",
+                "risk": "Düşme, ağır yaralanma",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "En az 110 cm yüksekliğinde korkuluk, ara korkuluk ve topuk levhası"
+            },
+            {
+                "activity": "Düşen malzeme riski (yüksekten)",
+                "hazard": "Sabitlenmemiş alet ve malzeme, taşıma sırasında düşme",
+                "risk": "Kafaya düşen cisim, ağır kafa travması, ölüm",
+                "default_O": 6,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Alet bilekliği, file ve bariyerler, baret kullanımı zorunlu, alttaki bölge kapatılmalı"
+            }
+        ]
+    },
+    {
+        "category": "Kimyasal Maddelerle Çalışma",
+        "icon": "FlaskConical",
+        "items": [
+            {
+                "activity": "Kimyasal madde depolama",
+                "hazard": "Uyumsuz kimyasalların birlikte depolanması",
+                "risk": "Patlama, zehirli gaz oluşumu, yangın",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Kimyasal uyumluluk tablosuna göre depolama, havalandırmalı depo, döküntü paletleri"
+            },
+            {
+                "activity": "SDS/MSDS belgeleri",
+                "hazard": "Güvenlik bilgi formu (SDS) eksikliği veya güncel olmaması",
+                "risk": "Yanlış müdahale, zehirlenme, kaza anında bilgi yetersizliği",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "Her kimyasal için güncel SDS bulundurulmalı, çalışanlara eğitim verilmeli"
+            },
+            {
+                "activity": "Kimyasal dökülme ve sızıntı",
+                "hazard": "Taşıma veya depolama sırasında sızıntı",
+                "risk": "Cilt yanıkları, solunum yolu tahrişi, çevre kirliliği",
+                "default_O": 3,
+                "default_S": 15,
+                "default_F": 3,
+                "measures": "Dökülme müdahale kiti (spill kit), KKD kullanımı, acil durum prosedürü"
+            },
+            {
+                "activity": "Kimyasal maruziyette KKD kullanımı",
+                "hazard": "KKD kullanılmaması veya uygun olmayan KKD seçimi",
+                "risk": "Cilt hastalıkları, solunum rahatsızlıkları, zehirlenme",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "Risk değerlendirmesine uygun KKD temini, kullanım eğitimi, periyodik değişim"
+            },
+            {
+                "activity": "Kimyasal madde etiketleme (GHS/CLP)",
+                "hazard": "Etiketsiz kaplar, belirsiz içerik",
+                "risk": "Yanlış kullanım, karışım kazaları, zehirlenme",
+                "default_O": 3,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "GHS uyumlu etiketleme, piktogram kullanımı, tüm kaplar etiketlenmeli"
+            }
+        ]
+    },
+    {
+        "category": "Yangın ve Acil Durumlar",
+        "icon": "Flame",
+        "items": [
+            {
+                "activity": "Yangın söndürme cihazları",
+                "hazard": "Yetersiz sayıda, süresi dolmuş veya erişilemeyen söndürücüler",
+                "risk": "Yangının büyümesi, kontrol kaybı, can ve mal kaybı",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Yıllık bakım ve dolum, 6 aylık görsel kontrol, yangın sınıfına uygun söndürücü seçimi"
+            },
+            {
+                "activity": "Acil çıkış yolları ve kapıları",
+                "hazard": "Kaçış yollarının engellenmesi, kilitli acil çıkış kapıları",
+                "risk": "Tahliye yapılamama, panik halinde ezilme, dumandan zehirlenme, ölüm",
+                "default_O": 6,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Kaçış yolları sürekli açık tutulmalı, panik barlı kapılar, fosforlu yönlendirme levhaları"
+            },
+            {
+                "activity": "Parlayıcı ve patlayıcı madde depolama",
+                "hazard": "Isı kaynağı yakınında depolama, havalandırma yetersizliği",
+                "risk": "Patlama, büyük çaplı yangın, çoklu ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Ex-proof ekipman, antistatik zemin, ATEX bölge sınıflandırması"
+            },
+            {
+                "activity": "Yangın algılama ve uyarı sistemi",
+                "hazard": "Duman dedektörü yokluğu veya arızası",
+                "risk": "Geç fark edilen yangın, büyük hasar, can kaybı",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Adresli yangın algılama sistemi, aylık test, yedek bataryalar"
+            },
+            {
+                "activity": "Acil durum tatbikatları",
+                "hazard": "Düzenli tatbikat yapılmaması, personelin tahliye bilgisizliği",
+                "risk": "Acil durumda kaos, yanlış tahliye, can kaybı",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 3,
+                "measures": "Yılda en az 1 tahliye tatbikatı, acil durum ekiplerinin belirlenmesi ve eğitimi"
+            }
+        ]
+    },
+    {
+        "category": "Kaldırma ve İletme Ekipmanları",
+        "icon": "Truck",
+        "items": [
+            {
+                "activity": "Forklift operasyonu",
+                "hazard": "Ehliyetsiz operatör, aşırı hız, görüş kısıtlılığı",
+                "risk": "Çarpma, ezilme, devrilme, ağır yaralanma, ölüm",
+                "default_O": 6,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Operatör belgesi zorunlu, hız sınırlandırıcı, mavi spot ışık, geri vites ikaz"
+            },
+            {
+                "activity": "Vinç operasyonu",
+                "hazard": "Kapasite aşımı, sapan arızası, rüzgârlı havada çalışma",
+                "risk": "Yük düşmesi, vinç devrilmesi, çoklu ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Yük testi sertifikası, periyodik muayene, rüzgâr hızı ölçümü, işaret operatörü"
+            },
+            {
+                "activity": "Sapan ve bağlama ekipmanları",
+                "hazard": "Yıpranmış sapanlar, uyumsuz sapan seçimi",
+                "risk": "Sapan kopması, yük düşmesi, ağır yaralanma, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Kullanım öncesi görsel kontrol, SWL etiketinin okunması, hasarlı sapanların imhası"
+            },
+            {
+                "activity": "Konveyör bant sistemleri",
+                "hazard": "Koruyucusuz silindir ve kayışlar, acil durdurma eksikliği",
+                "risk": "Uzuv sıkışması, saç ve kıyafet sarılması, ağır yaralanma",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Nip noktalarına koruyucu, acil durdurma halatı/butonu, çalışır halde bakım yasağı"
+            },
+            {
+                "activity": "Elle yük taşıma",
+                "hazard": "Ağır yükün uygunsuz teknikle kaldırılması",
+                "risk": "Bel fıtığı, kas yırtılması, düşürme sonucu ezilme",
+                "default_O": 6,
+                "default_S": 7,
+                "default_F": 10,
+                "measures": "Maksimum 25 kg sınırı, ergonomik kaldırma eğitimi, mekanik yardımcı ekipman"
+            }
+        ]
+    },
+    {
+        "category": "Kapalı ve Kısıtlı Alan Çalışmaları",
+        "icon": "LockKeyhole",
+        "items": [
+            {
+                "activity": "Kapalı alan giriş öncesi gaz ölçümü",
+                "hazard": "Oksijen yetersizliği, zehirli/patlayıcı gaz birikimi",
+                "risk": "Bilinç kaybı, zehirlenme, patlama, boğulma, ölüm",
+                "default_O": 6,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Giriş öncesi 4-gazlı dedektör ile ölçüm (O₂, CO, H₂S, LEL), sürekli izleme"
+            },
+            {
+                "activity": "Kapalı alanda çalışma izni (PTW)",
+                "hazard": "İzinsiz giriş, gözetmen yokluğu",
+                "risk": "Acil durumda kurtarılamama, ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Çalışma izin formu zorunlu, girişte gözetmen, kurtarma ekibi hazır"
+            },
+            {
+                "activity": "Kapalı alanda havalandırma",
+                "hazard": "Yetersiz hava sirkülasyonu, doğal havalandırma imkânsızlığı",
+                "risk": "Oksijen yetersizliği, gaz birikimi, bayılma",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Zorlanmış havalandırma sistemi, sürekli gaz izleme, uyarı alarmı"
+            },
+            {
+                "activity": "Kapalı alan kurtarma tatbikatı",
+                "hazard": "Kurtarma prosedürü ve ekip eksikliği",
+                "risk": "Acil durumda müdahale gecikmesi, can kaybı",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 1,
+                "measures": "Yılda en az 1 kurtarma tatbikatı, tripod ve kurtarma vinci, eğitimli kurtarma ekibi"
+            }
+        ]
+    },
+    {
+        "category": "Kaynak ve Sıcak İşler",
+        "icon": "Sparkles",
+        "items": [
+            {
+                "activity": "Elektrik ark kaynağı",
+                "hazard": "UV/IR ışın yayılımı, kıvılcım sıçraması",
+                "risk": "Göz yanığı (ark gözü), cilt yanıkları, yangın",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 10,
+                "measures": "Kaynak maskesi (DIN 10-13), kaynak perdesi/paravanı, yanıcılardan uzaklaştırma"
+            },
+            {
+                "activity": "Oksiasetilen gazaltı kaynağı",
+                "hazard": "Gaz sızıntısı, tüp devrilmesi, geri tepme",
+                "risk": "Patlama, yangın, ağır yanıklar, ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 6,
+                "measures": "Alev geri tepme ventili, tüp arabası ve sabitleme zinciri, sızıntı kontrolü"
+            },
+            {
+                "activity": "Sıcak iş çalışma izni",
+                "hazard": "İzinsiz sıcak iş, çevrede yanıcı malzeme",
+                "risk": "Kontrol dışı yangın, patlama, can ve mal kaybı",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Sıcak iş izin formu, gözetmen ataması, söndürücü hazır bulunması, iş sonrası kontrol"
+            },
+            {
+                "activity": "Kaynak dumanı maruziyeti",
+                "hazard": "Metal buharları ve toksik gazlara maruziyet",
+                "risk": "Metal dumanı ateşi, akciğer hastalıkları, kanser",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 10,
+                "measures": "Lokal aspirasyon sistemi, FFP2/3 maske, kapalı alanda ek havalandırma"
+            }
+        ]
+    },
+    {
+        "category": "El Aletleri ve Makineler",
+        "icon": "Wrench",
+        "items": [
+            {
+                "activity": "Tezgâh ve CNC makineleri",
+                "hazard": "Döner aksam, fırlayan parçalar, makine koruyucusu eksikliği",
+                "risk": "Uzuv kopması, fırlayan parça etkisi, ağır yaralanma, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Makine koruyucuları, çift el kumandası, acil durdurma butonu, kilitleme sistemi"
+            },
+            {
+                "activity": "Taşlama/Kesme makineleri (Spiral)",
+                "hazard": "Disk kırılması, geri tepme, kıvılcım",
+                "risk": "Disk parçası fırlama, kesik, göz yaralanması, yangın",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 10,
+                "measures": "Koruyucu siperlik kapatılmış olmalı, koruyucu gözlük, uygun RPM disk seçimi"
+            },
+            {
+                "activity": "El aletleri (çekiç, tornavida, pense vb.)",
+                "hazard": "Hasarlı/uygunsuz alet kullanımı",
+                "risk": "El ve parmak yaralanmaları, çarpma, ezilme",
+                "default_O": 6,
+                "default_S": 3,
+                "default_F": 10,
+                "measures": "Kullanım öncesi kontrol, hasarlı aletin kullanımdan çekilmesi, uygun alet seçimi"
+            },
+            {
+                "activity": "Pres ve apkant makineleri",
+                "hazard": "Koruyucusuz baskı bölgesi, elle besleme",
+                "risk": "El/parmak ezilmesi, kopma, ağır yaralanma",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Işık bariyeri veya çift el kumanda, elle besleme yasağı, otomatik besleme sistemi"
+            },
+            {
+                "activity": "Bakım-onarım sırasında LOTO prosedürü",
+                "hazard": "Makinenin bakım sırasında beklenmedik çalışması",
+                "risk": "Uzuv sıkışması, ezilme, ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Kilitle-Etiketle (LOTO) prosedürü, sıfır enerji doğrulaması, kişisel kilit"
+            }
+        ]
+    },
+    {
+        "category": "Gürültü ve Titreşim",
+        "icon": "Volume2",
+        "items": [
+            {
+                "activity": "Gürültülü ortamda çalışma (>85 dB)",
+                "hazard": "Sürekli yüksek gürültüye maruziyet",
+                "risk": "Kalıcı işitme kaybı, tinnitus (çınlama), iletişim zorluğu",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 10,
+                "measures": "Gürültü ölçümü, kulaklık/tıkaç kullanımı, gürültü kaynağında izolasyon"
+            },
+            {
+                "activity": "Titreşimli el aletleri kullanımı",
+                "hazard": "Uzun süreli titreşime maruziyet (HAV)",
+                "risk": "Beyaz parmak hastalığı (Raynaud), sinir hasarı, eklem bozuklukları",
+                "default_O": 3,
+                "default_S": 7,
+                "default_F": 6,
+                "measures": "Anti-vibrasyon eldivenler, maruz kalma süresi sınırlaması, düşük titreşimli alet seçimi"
+            },
+            {
+                "activity": "Gürültü haritası ve ortam ölçümü",
+                "hazard": "Ölçüm yapılmamış ortamlar, bilinmeyen maruziyet düzeyi",
+                "risk": "Farkında olmadan maruziyet, meslek hastalığı",
+                "default_O": 3,
+                "default_S": 7,
+                "default_F": 3,
+                "measures": "Yıllık ortam ölçümü, gürültü haritası oluşturulması, uyarı levhaları"
+            }
+        ]
+    },
+    {
+        "category": "Biyolojik Risk Etmenleri",
+        "icon": "Bug",
+        "items": [
+            {
+                "activity": "Atık toplama ve bertaraf",
+                "hazard": "Tıbbi/biyolojik atıklarla temas, kesici-delici atıklar",
+                "risk": "Enfeksiyon (Hepatit B/C, HIV), zehirlenme",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "KKD kullanımı, biyolojik tehlike işaretlemesi, atık sınıflandırma eğitimi"
+            },
+            {
+                "activity": "Hijyen ve sanitasyon",
+                "hazard": "Yetersiz el yıkama imkânı, kirli ortak alanlar",
+                "risk": "Bulaşıcı hastalık yayılımı, gıda zehirlenmesi",
+                "default_O": 6,
+                "default_S": 7,
+                "default_F": 10,
+                "measures": "Yeterli lavabo ve sabun, dezenfektan istasyonları, periyodik temizlik"
+            },
+            {
+                "activity": "Haşere ve kemirgen kontrolü",
+                "hazard": "Fare, böcek, haşere kaynaklı kontaminasyon",
+                "risk": "Hastalık taşıyıcılığı, gıda kontaminasyonu, halk sağlığı riski",
+                "default_O": 3,
+                "default_S": 7,
+                "default_F": 3,
+                "measures": "Periyodik ilaçlama, kapı ve pencere conta kontrolü, atık yönetimi"
+            }
+        ]
+    },
+    {
+        "category": "Psikososyal Riskler",
+        "icon": "Brain",
+        "items": [
+            {
+                "activity": "Aşırı iş yükü ve uzun çalışma saatleri",
+                "hazard": "Kronik stres, tükenmişlik, iş-yaşam dengesi bozulması",
+                "risk": "Depresyon, kardiyovasküler hastalıklar, iş kazası artışı",
+                "default_O": 6,
+                "default_S": 7,
+                "default_F": 10,
+                "measures": "İş yükü analizi, rotasyon, dinlenme süreleri, çalışan destek programı (EAP)"
+            },
+            {
+                "activity": "Mobbing ve işyeri psikolojik tacizi",
+                "hazard": "Sistematik psikolojik baskı, dışlama, aşağılama",
+                "risk": "Depresyon, anksiyete, işten ayrılma, intihar düşüncesi",
+                "default_O": 3,
+                "default_S": 15,
+                "default_F": 3,
+                "measures": "Anti-mobbing politikası, şikayet mekanizması, yönetici eğitimi"
+            },
+            {
+                "activity": "Gece vardiyası ve düzensiz çalışma",
+                "hazard": "Sirkadiyen ritim bozulması, uyku yetersizliği",
+                "risk": "Dikkat dağınıklığı, iş kazası riski artışı, metabolik bozukluklar",
+                "default_O": 6,
+                "default_S": 7,
+                "default_F": 6,
+                "measures": "Vardiya rotasyonu, yeterli dinlenme süresi, aydınlık çalışma ortamı"
+            }
+        ]
+    },
+    {
+        "category": "Saha İçi Trafik ve Motorlu Araçlar",
+        "icon": "Car",
+        "items": [
+            {
+                "activity": "Yaya-araç trafiği",
+                "hazard": "Ayrılmamış yaya ve araç yolları, yetersiz işaretleme",
+                "risk": "Çarpma, ezilme, ağır yaralanma, ölüm",
+                "default_O": 6,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Yaya geçitleri, bariyerler, yer çizgileri, ayna ve hız kesiciler"
+            },
+            {
+                "activity": "İş makinesi operasyonu",
+                "hazard": "Kör nokta, devrilme, zemin çökmesi",
+                "risk": "Ezilme, devrilme, operatör sıkışması, ölüm",
+                "default_O": 3,
+                "default_S": 40,
+                "default_F": 6,
+                "measures": "Geri görüş kamerası, devrilme koruma yapısı (ROPS), emniyet kemeri"
+            },
+            {
+                "activity": "Hız kontrolü ve saha kuralları",
+                "hazard": "Saha içinde hız ihlali, dikkatsiz sürüş",
+                "risk": "Trafik kazası, çarpma, yaralanma",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "Hız limiti (max 20 km/sa), radar/hız izleme, ehliyet kontrolü"
+            }
+        ]
+    },
+    {
+        "category": "Kazı ve Zemin İşleri",
+        "icon": "Shovel",
+        "items": [
+            {
+                "activity": "Derin kazı çalışması (>1.5m)",
+                "hazard": "Şev çökmesi, toprak kayması",
+                "risk": "Göçük altında kalma, boğulma, ölüm",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "İksa/şev açısı hesabı, basamaklı kazı, günlük zemin kontrolü, bariyerler"
+            },
+            {
+                "activity": "Yeraltı tesisatı (elektrik, doğalgaz, su)",
+                "hazard": "Bilinmeyen yeraltı hatlarının kazıyla hasarlanması",
+                "risk": "Elektrik çarpması, gaz patlaması, su baskını",
+                "default_O": 3,
+                "default_S": 100,
+                "default_F": 3,
+                "measures": "Kazı öncesi alt yapı araştırması, tespit-işaretleme, elle kazı zorunluluğu"
+            },
+            {
+                "activity": "Kazı alanı güvenliği",
+                "hazard": "İşaretsiz ve korunmasız kazı kenarı",
+                "risk": "Üçüncü şahsın/yaya'nın kazıya düşmesi, yaralanma",
+                "default_O": 6,
+                "default_S": 15,
+                "default_F": 6,
+                "measures": "Kazı etrafında bariyerler, uyarı şeridi, gece flaşörler, kenar korkuluğu"
+            },
+            {
+                "activity": "Ağır yağış sonrası kazı stabilitesi",
+                "hazard": "Suyla doygun zemin, artan göçük riski",
+                "risk": "Ani göçük, çamur akıntısı, ekipman hasarı",
+                "default_O": 6,
+                "default_S": 40,
+                "default_F": 3,
+                "measures": "Yağış sonrası zemin değerlendirmesi, pompalama ile su tahliyesi, giriş yasağı"
+            }
+        ]
+    }
+]

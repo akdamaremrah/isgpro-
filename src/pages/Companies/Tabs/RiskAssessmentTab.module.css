@@ -1,0 +1,543 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.filterGroup,
+.actionButtons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.filterBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-light);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.filterBtn:hover {
+    background: var(--bg-main);
+}
+
+.filterActive {
+    background: var(--gradient-accent) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: var(--shadow-accent);
+}
+
+.filterHigh {
+    color: #dc2626;
+}
+
+.addBtn,
+.exportBtn,
+.wizardBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+}
+
+.addBtn {
+    background: var(--gradient-accent);
+    box-shadow: var(--shadow-accent);
+}
+
+.addBtn:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-accent-lg);
+}
+
+.exportBtn {
+    background: #059669;
+}
+
+.exportBtn:hover {
+    background: #047857;
+}
+
+.wizardBtn {
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+}
+
+.wizardBtn:hover {
+    background: linear-gradient(135deg, #6d28d9, #4f46e5);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+/* Excel-Style Table */
+.tableCard {
+    background: var(--gradient-surface);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    max-height: 70vh;
+}
+
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    /* For standardizing widths */
+    min-width: 2500px;
+    /* Force scroll */
+}
+
+/* Column Widths */
+.dataTable th.colNarrow {
+    width: 55px;
+}
+
+.dataTable th.colMed {
+    width: 140px;
+}
+
+.dataTable th.colWide {
+    width: 280px;
+}
+
+.actionCol {
+    width: 60px;
+    text-align: center;
+}
+
+/* Multi-level headers */
+.dataTable thead th {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 0.6rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.groupHeaderInitial {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    color: #1e40af !important;
+    font-size: 0.8rem !important;
+    border-bottom: 2px solid #3b82f6 !important;
+}
+
+.groupHeaderFinal {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    color: #166534 !important;
+    font-size: 0.8rem !important;
+    border-bottom: 2px solid #22c55e !important;
+}
+
+.subGroupInitial {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    color: #1e40af !important;
+}
+
+.subGroupFinal {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    color: #166534 !important;
+}
+
+/* Body Cells */
+.dataTable td {
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+    padding: 0;
+    /* padding handled inside inputs for full hit area */
+    position: relative;
+    height: 100%;
+}
+
+.dataTable tbody tr {
+    background: white;
+    transition: background 0.15s;
+}
+
+.dataTable tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Inline Edit Inputs */
+.cellInput,
+.cellInputCenter {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.cellInput textarea,
+.cellInput input,
+.cellInputCenter select,
+.cellInputCenter input {
+    width: 100%;
+    height: 100%;
+    min-height: 48px;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    outline: none;
+    resize: vertical;
+}
+
+.cellInput textarea {
+    line-height: 1.4;
+}
+
+.cellInputCenter select,
+.cellInputCenter input {
+    text-align: center;
+    text-align-last: center;
+    /* For select elements */
+    font-weight: 600;
+    appearance: none;
+    /* Hide default arrow to look clean */
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+/* Hover/Focus indicators for inputs */
+.cellInput:hover,
+.cellInputCenter:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.cellInput:focus-within,
+.cellInputCenter:focus-within {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    background: white;
+    z-index: 10;
+    /* Pop above other cells */
+}
+
+/* Hard cell styles */
+.cellCenter {
+    text-align: center;
+    vertical-align: middle !important;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.cellDisabled {
+    background: #f1f5f9 !important;
+    color: #64748b;
+    cursor: not-allowed;
+    font-weight: 600;
+}
+
+/* Dynamic Color Scale (Fill Cell) */
+.bg_none {
+    background-color: #f8fafc !important;
+    color: #94a3b8 !important;
+}
+
+.bg_white {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.bg_green {
+    background-color: #39ff14 !important;
+    color: black !important;
+    box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.4);
+}
+
+/* Neon Yeşil */
+.bg_blue {
+    background-color: #00f3ff !important;
+    color: black !important;
+    box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+/* Neon Mavi */
+.bg_yellow {
+    background-color: #FFFF00 !important;
+    color: black !important;
+    box-shadow: inset 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+/* Neon Sarı */
+.bg_red {
+    background-color: #ff073a !important;
+    color: white !important;
+    box-shadow: inset 0 0 10px rgba(255, 7, 58, 0.6);
+}
+
+/* Neon Kırmızı */
+
+.actionCol {
+    text-align: center;
+    vertical-align: middle !important;
+    padding: 0.5rem;
+}
+
+/* Buttons */
+.iconBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.4rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    transition: all 0.15s;
+}
+
+.iconBtn:hover {
+    background: var(--border-light);
+    color: var(--text-primary);
+}
+
+.iconBtnDanger:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-muted) !important;
+    font-style: italic;
+}
+
+.pagination {
+    padding: 0.75rem 1rem;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-light);
+}
+
+.pageInfo {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--text-muted);
+}
+
+/* Row Checkbox & Danger Button */
+.rowCheckbox {
+    width: 1.15rem;
+    height: 1.15rem;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.selectedRow {
+    background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+.btnDanger {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnDanger:hover:not(:disabled) {
+    background: #fee2e2;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.btnDanger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Firma Bilgileri Kartı */
+.firmaBilgileri {
+    background: var(--gradient-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.firmaBilgileriHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.firmaBilgileriGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.firmaBilgileriField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.firmaBilgileriLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.firmaBilgileriHint {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #818cf8;
+}
+
+.firmaBilgileriValue {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.firmaBilgileriMono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+}
+
+.firmaBilgileriDateInput {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    border-radius: 0;
+    padding: 0;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    cursor: pointer;
+}
+
+.firmaBilgileriDateInput:focus {
+    border-bottom-color: rgba(99, 102, 241, 0.6);
+}
+
+.firmaBilgileriDateInput::-webkit-calendar-picker-indicator {
+    opacity: 0.4;
+    cursor: pointer;
+    filter: invert(1);
+}
+
+.firmaBilgileriValid {
+    color: #10b981 !important;
+}
+
+.firmaBilgileriExpired {
+    color: #ef4444 !important;
+}
+
+.firmaBilgileriExpiredBadge {
+    font-size: 0.7rem;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.25rem;
+}
+
+/* Combined Risk Level cell */
+.cellRiskLevel {
+    text-align: center;
+    vertical-align: middle !important;
+    padding: 0.4rem 0.5rem;
+}
+
+.riskScore {
+    display: block;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.riskLevelText {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 0.15rem;
+}
+
+.colRiskLevel {
+    width: 120px;
+}
+
+.tabTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}

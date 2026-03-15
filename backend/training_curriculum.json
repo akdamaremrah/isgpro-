@@ -1,0 +1,73 @@
+{
+  "formTitle": "TEMEL İŞ SAĞLIĞI VE GÜVENLİĞİ EĞİTİMİ KATILIM TUTANAĞI",
+  "dangerClass": "Çok Tehlikeli",
+  "totalMinutes": 1060,
+  "curriculum": [
+    {
+      "category": "GENEL KONULAR",
+      "categoryCode": "1",
+      "topics": [
+        { "code": "110", "name": "Çalışma mevzuatı ile ilgili bilgiler", "session1": 50, "session2": null, "session3": null },
+        { "code": "120", "name": "Çalışanların yasal hak ve sorumlulukları", "session1": 50, "session2": null, "session3": null },
+        { "code": "130", "name": "İşyeri temizliği ve düzeni", "session1": 50, "session2": null, "session3": null },
+        { "code": "140", "name": "İş kazası ve meslek hastalığından doğan hukuki sonuçlar", "session1": 50, "session2": null, "session3": null }
+      ]
+    },
+    {
+      "category": "SAĞLIK KONULARI",
+      "categoryCode": "2",
+      "topics": [
+        { "code": "210", "name": "Meslek hastalıklarının sebepleri", "session1": null, "session2": null, "session3": 60 },
+        { "code": "220", "name": "Hastalıktan korunma prensipleri ve korunma tekniklerinin uygulanması", "session1": null, "session2": null, "session3": 30 },
+        { "code": "230", "name": "Biyolojik ve psikososyal risk etmenleri", "session1": null, "session2": null, "session3": 45 },
+        { "code": "240", "name": "İlkyardım", "session1": null, "session2": null, "session3": 60 },
+        { "code": "250", "name": "Tütün ürünlerinin zararları ve pasif etkilenim", "session1": null, "session2": null, "session3": 45 }
+      ]
+    },
+    {
+      "category": "TEKNİK KONULAR",
+      "categoryCode": "3",
+      "topics": [
+        { "code": "310", "name": "Kimyasal, fiziksel ve ergonomik risk etmenleri", "session1": 40, "session2": null, "session3": null },
+        { "code": "320", "name": "Elle kaldırma ve taşıma", "session1": 40, "session2": null, "session3": null },
+        { "code": "330", "name": "Parlama, patlama, yangın ve yangından korunma", "session1": 40, "session2": null, "session3": null },
+        { "code": "340", "name": "İş ekipmanlarının güvenli kullanımı", "session1": 40, "session2": null, "session3": null },
+        { "code": "350", "name": "Ekranlı araçlarla çalışma", "session1": null, "session2": 30, "session3": null },
+        { "code": "360", "name": "Elektrik, tehlikeleri, riskleri ve önlemleri", "session1": null, "session2": 50, "session3": null },
+        { "code": "370", "name": "İş kazalarının sebepleri ve korunma prensipleri ile tekniklerinin uygulanması", "session1": null, "session2": 50, "session3": null },
+        { "code": "380", "name": "Güvenlik ve sağlık işaretleri", "session1": null, "session2": 40, "session3": null },
+        { "code": "390", "name": "Kişisel koruyucu donanım kullanımı", "session1": 60, "session2": null, "session3": null },
+        { "code": "395", "name": "İş sağlığı ve güvenliği genel kuralları ve güvenlik kültürü", "session1": 60, "session2": null, "session3": null },
+        { "code": "399", "name": "Tahliye ve kurtarma", "session1": null, "session2": 40, "session3": null }
+      ]
+    },
+    {
+      "category": "DİĞER KONULAR",
+      "categoryCode": "4",
+      "topics": [
+        { "code": "401", "name": "Yüksekte çalışma", "session1": null, "session2": 30, "session3": null }
+      ]
+    }
+  ],
+  "participantFields": [
+    "no",
+    "tcKimlikNo",
+    "adSoyad",
+    "gorevi",
+    "egitimTarihi1",
+    "imza1",
+    "egitimTarihi2",
+    "imza2",
+    "egitimTarihi3",
+    "imza3"
+  ],
+  "companyFields": {
+    "firmaAdi": "",
+    "isyeriSgkNo": ""
+  },
+  "trainerFields": {
+    "egitmenAdi": "",
+    "egitmenUnvani": "",
+    "egitmenSicilNo": ""
+  }
+}

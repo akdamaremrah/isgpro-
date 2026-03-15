@@ -1,0 +1,292 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+    color: var(--accent);
+}
+
+.companyInfoCard {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 40%, #f0f9ff 70%, #ffffff 100%);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.companyInfoCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0ea5e9, #10b981, #f59e0b, #f43f5e, #8b5cf6);
+}
+
+.companyMainDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.titleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0369a1 0%, #0e7490 25%, #059669 50%, #0d9488 75%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    position: relative;
+    width: 130px;
+    white-space: nowrap;
+}
+
+.badgeDanger {
+    background: #ff003c;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 0 10px rgba(255, 0, 60, 0.5), 0 0 30px rgba(255, 0, 60, 0.2), 0 2px 8px rgba(255, 0, 60, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badgeWarning {
+    background: #ff8c00;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.5), 0 0 30px rgba(255, 140, 0, 0.2), 0 2px 8px rgba(255, 140, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badgeSuccess {
+    background: #eaff00;
+    color: #1a2600;
+    border: none;
+    box-shadow: 0 0 10px rgba(234, 255, 0, 0.5), 0 0 30px rgba(234, 255, 0, 0.2), 0 2px 8px rgba(234, 255, 0, 0.3);
+    text-shadow: 0 1px 0px rgba(255, 255, 255, 0.3);
+}
+
+.badgeActive {
+    background: #00c853;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 200, 83, 0.5), 0 0 30px rgba(0, 200, 83, 0.2), 0 2px 8px rgba(0, 200, 83, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.sgkText {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0;
+    margin-top: 0.3rem;
+    font-weight: 500;
+    letter-spacing: normal;
+}
+
+.companyStats {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.statBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    text-align: center;
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0e7490;
+    line-height: 1.2;
+}
+
+.statValueHigh {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.kurulWarning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-left: 3px solid #f59e0b;
+    border-radius: var(--radius-md);
+    color: #b45309;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.statValueText {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.2;
+    padding-top: 0.3rem;
+}
+
+.exportWordBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    background: linear-gradient(135deg, #1E3A5F, #2563EB);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    align-self: center;
+}
+
+.exportWordBtn:hover {
+    opacity: 0.85;
+}
+
+/* Tabs */
+.tabContainer {
+    display: flex;
+    flex-direction: column;
+    background: var(--gradient-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.tabList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
+}
+
+.tabBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    /* Tam yuvarlak hap görünümü */
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.tabBtn:hover {
+    color: var(--text-secondary);
+    background-color: var(--bg-main);
+    border-color: rgba(14, 116, 144, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.12);
+}
+
+.activeTab {
+    color: white;
+    background: linear-gradient(135deg, #0369a1 0%, #0e7490 50%, #059669 100%);
+    border-color: transparent;
+    font-weight: 600;
+    box-shadow: 0 4px 14px -2px rgba(14, 116, 144, 0.3);
+}
+
+.activeTab:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -2px rgba(14, 116, 144, 0.4);
+}
+
+.tabContentArea {
+    padding: 2rem;
+    flex-grow: 1;
+    background-color: var(--bg-surface);
+    min-height: 400px;
+}
+
+.tempContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+    border: 2px dashed rgba(99, 102, 241, 0.15);
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+}
