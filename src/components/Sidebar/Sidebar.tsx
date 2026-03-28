@@ -6,9 +6,10 @@ import styles from './Sidebar.module.css';
 interface SidebarProps {
     isOpen: boolean;
     toggleSidebar: () => void;
+    onNavClick?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, onNavClick }) => {
     const menuItems = [
         { title: 'Ana Sayfa', icon: <MIcon name="dashboard" size={20} />, path: '/dashboard' },
         { title: 'Firmalar', icon: <MIcon name="business" size={20} />, path: '/companies' },
@@ -20,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     return (
         <>
+            {isOpen && <div className={styles.mobileOverlay} onClick={toggleSidebar} />}
             <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.collapsed}`}>
                 <div className={styles.logoSection}>
                     <div
@@ -90,6 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                             <NavLink
                                 key={index}
                                 to={item.path}
+                                onClick={onNavClick}
                                 className={({ isActive }) =>
                                     `${styles.navItem} ${isActive && item.path !== '/' ? styles.active : ''}`
                                 }

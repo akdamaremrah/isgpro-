@@ -5,15 +5,15 @@ import Topbar from '../components/Topbar/Topbar';
 import styles from './MainLayout.module.css';
 
 const MainLayout: React.FC = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const isMobile = () => window.innerWidth < 768;
+    const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile());
 
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
-    };
+    const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+    const closeSidebar = () => { if (isMobile()) setIsSidebarOpen(false); };
 
     return (
         <div className={styles.layoutContainer}>
-            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} onNavClick={closeSidebar} />
 
             <div className={`${styles.mainWrapper} ${!isSidebarOpen ? styles.mainWrapperCollapsed : ''}`}>
                 <Topbar toggleSidebar={toggleSidebar} />

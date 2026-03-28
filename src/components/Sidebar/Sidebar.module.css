@@ -354,3 +354,37 @@
     color: white;
     transform: scale(1.05);
 }
+
+/* ── Mobil overlay ── */
+.mobileOverlay {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .sidebar {
+        transition: transform var(--transition-normal);
+    }
+
+    .open {
+        width: var(--sidebar-width);
+        transform: translateX(0);
+    }
+
+    .collapsed {
+        width: var(--sidebar-width);
+        transform: translateX(-100%);
+    }
+
+    .collapseBtn {
+        display: none;
+    }
+
+    .mobileOverlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+    }
+}

@@ -23,7 +23,7 @@ interface Notification {
     time: string;
 }
 
-const Topbar: React.FC<TopbarProps> = () => {
+const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -107,6 +107,9 @@ const Topbar: React.FC<TopbarProps> = () => {
 
     return (
         <header className={styles.topbar}>
+            <button className={styles.hamburgerBtn} onClick={toggleSidebar} aria-label="Menü">
+                <MIcon name="menu" size={22} />
+            </button>
             <div className={styles.leftSection}>
                 <div className={styles.searchContainer} ref={dropdownRef}>
                     <MIcon name="search" size={18} className={styles.searchIcon} />
