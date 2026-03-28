@@ -677,6 +677,32 @@ def seed_data():
 def setup_db():
     with app.app_context():
         db.create_all()
+        # ── Auth migration: add user_id to companies + hash plain-text passwords ──
+        try:
+            from werkzeug.security import generate_password_hash
+            from sqlalchemy import text
+            with db.engine.connect() as conn:
+                # Add user_id column if not exists
+                conn.execute(text(
+                    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)"
+                ))
+                # Assign all unowned companies to first user
+                result = conn.execute(text("SELECT id, password FROM users ORDER BY id LIMIT 1"))
+                row = result.fetchone()
+                if row:
+                    uid, pwd = row[0], row[1]
+                    conn.execute(text(
+                        "UPDATE companies SET user_id = :uid WHERE user_id IS NULL"
+                    ), {"uid": uid})
+                    # Hash plain-text password if needed
+                    if pwd and not (pwd.startswith('pbkdf2:') or pwd.startswith('scrypt:')):
+                        hashed = generate_password_hash(pwd)
+                        conn.execute(text(
+                            "UPDATE users SET password = :pwd WHERE id = :uid"
+                        ), {"pwd": hashed, "uid": uid})
+                conn.commit()
+        except Exception as e:
+            app.logger.warning(f"Auth migration skipped (SQLite or already done): {e}")
         seed_data()
 
 # --- PROFESSIONALS ROUTES ---
