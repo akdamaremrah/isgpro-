@@ -6,7 +6,6 @@ import { API_BASE } from '../../../config/api';
 
 
 import { usePersonnelList, useAddPersonnel, useUpdatePersonnel, useDeletePersonnel, useBulkDeletePersonnel, useBulkUploadPersonnel } from '../../../hooks/usePersonnel';
-import { toast } from 'sonner';
 import { useScrollLock } from '../../../hooks/useScrollLock';
 
 interface EmployeesTabProps {

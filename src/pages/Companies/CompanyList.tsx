@@ -24,12 +24,12 @@ const CompanyList: React.FC = () => {
 
     // Gizleme
     const LS_HIDDEN = 'isg_hidden_companies';
-    const [hiddenIds, setHiddenIds] = useState<number[]>(() => {
+    const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
         try { return JSON.parse(localStorage.getItem(LS_HIDDEN) ?? '[]'); } catch { return []; }
     });
     const [showHidden, setShowHidden] = useState(false);
 
-    const toggleHide = (e: React.MouseEvent, id: number) => {
+    const toggleHide = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         setHiddenIds(prev => {
             const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];

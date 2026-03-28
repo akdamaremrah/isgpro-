@@ -60,12 +60,12 @@ type GuidedStage = 'sector' | 'subtype' | 'phases' | 'items';
 const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel }) => {
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [promptText, setPromptText] = useState('');
-    const [scope, setScope] = useState<'general' | 'specific' | 'machine'>('general');
+    const [scope, _setScope] = useState<'general' | 'specific' | 'machine'>('general');
     const [generating, setGenerating] = useState(false);
     const [saving, setSaving] = useState(false);
 
     // Mode
-    const [inputMode, setInputMode] = useState<InputMode>('guided');
+    const [inputMode, _setInputMode] = useState<InputMode>('guided');
 
     // Guided mode state
     const [guidedStage, setGuidedStage] = useState<GuidedStage>('sector');
