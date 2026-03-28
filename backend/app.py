@@ -31,10 +31,12 @@ app = Flask(__name__)
 # Üretimde FRONTEND_URL env değişkeninden izin verilen origin alınır.
 # Lokalde veya değişken yoksa tüm originlere izin verilir.
 _frontend_url = os.environ.get('FRONTEND_URL', '')
+_allowed_origins = ["http://localhost:5173", "http://localhost:5174"]
 if _frontend_url:
-    CORS(app, resources={r"/api/*": {"origins": [_frontend_url, "http://localhost:5173"]}})
-else:
-    CORS(app)  # local development: allow all
+    _allowed_origins.append(_frontend_url)
+# Vercel preview URL'leri de izin ver
+_allowed_origins_regex = r"https://.*\.vercel\.app"
+CORS(app, resources={r"/api/*": {"origins": _allowed_origins + [_allowed_origins_regex]}})
 
 def clean_tc(val):
     """Normalize TC kimlik no: strip '.0' suffix, scientific notation, ensure plain digit string."""
