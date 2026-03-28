@@ -18,7 +18,7 @@ export const usePersonnelList = (companyId: string | undefined) => {
     return useQuery<Personnel[]>({
         queryKey: ['personnel', companyId],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/companies/${companyId}/personnel`);
+            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel`);
             if (!res.ok) throw new Error('Personel listesi yüklenemedi');
             return res.json();
         },
@@ -31,7 +31,7 @@ export const useDeletePersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (id: number) => {
-            const res = await fetch(`${API_BASE}/personnel/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_BASE}/api/personnel/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Personel silinemedi');
             return id;
         },
@@ -57,12 +57,65 @@ export const useDeletePersonnel = (companyId: string | undefined) => {
     });
 };
 
+export const useAddPersonnel = (companyId: string | undefined) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (formData: Record<string, any>) => {
+            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Personel eklenemedi');
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            toast.success('Personel başarıyla eklendi');
+            queryClient.invalidateQueries({ queryKey: ['personnel', companyId] });
+            queryClient.invalidateQueries({ queryKey: ['companies'] });
+        },
+        onError: (err: Error) => {
+            toast.error('Hata: ' + err.message);
+        },
+    });
+};
+
+export const useUpdatePersonnel = (companyId: string | undefined) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, formData }: { id: number; formData: Record<string, any> }) => {
+            const res = await fetch(`${API_BASE}/api/personnel/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Personel güncellenemedi');
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            toast.success('Personel başarıyla güncellendi');
+            queryClient.invalidateQueries({ queryKey: ['personnel', companyId] });
+        },
+        onError: (err: Error) => {
+            toast.error('Hata: ' + err.message);
+        },
+    });
+};
+
 export const useBulkDeletePersonnel = (companyId: string | undefined) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async (ids: number[]) => {
-            const res = await fetch(`${API_BASE}/personnel/bulk`, {
+            const res = await fetch(`${API_BASE}/api/personnel/bulk`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids }),
@@ -97,7 +150,7 @@ export const useBulkUploadPersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (formData: FormData) => {
-            const res = await fetch(`${API_BASE}/companies/${companyId}/personnel/bulk-upload`, {
+            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel/bulk-upload`, {
                 method: 'POST',
                 body: formData,
             });

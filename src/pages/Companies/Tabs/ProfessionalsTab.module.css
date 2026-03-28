@@ -281,6 +281,65 @@
 /* --- DETAIL MODAL & INLINE EDIT --- */
 
 /* Suggestion dropdown */
+/* ── Daha önce atananlar chip'leri ─────────────────────── */
+.prevAssignedSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 0.25rem;
+}
+
+.prevAssignedLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+.prevAssignedChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.prevChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    background: #fff;
+    border: 1.5px solid #d1d5db;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.prevChip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-muted);
+}
+
+.prevChipActive {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    background: var(--accent-muted) !important;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+/* ── Suggestion list ────────────────────────────────────── */
 .suggestionList {
     position: absolute;
     left: 0;

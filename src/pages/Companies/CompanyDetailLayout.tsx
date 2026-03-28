@@ -10,6 +10,7 @@ import PlansTab from './Tabs/PlansTab';
 import TrainingTab from './Tabs/TrainingHealthTab';
 import HealthSurveillanceTab from './Tabs/HealthSurveillanceTab';
 import RiskAssessmentTab from './Tabs/RiskAssessmentTab';
+import SahaDenetimleriTab from './Tabs/SahaDenetimleriTab';
 
 interface CompanyInfo {
     official_title: string;
@@ -36,6 +37,7 @@ const CompanyDetailLayout: React.FC = () => {
     const [activeTab, setActiveTabState] = useState(() => searchParams.get('tab') || 'profesyoneller');
     const [company, setCompany] = useState<CompanyInfo | null>(null);
     const [hasKurulUyesi, setHasKurulUyesi] = useState(false);
+
 
     const setActiveTab = (tabId: string) => {
         setActiveTabState(tabId);
@@ -169,7 +171,7 @@ const CompanyDetailLayout: React.FC = () => {
                     {activeTab === 'risk' && <RiskAssessmentTab companyId={id!} />}
                     {activeTab === 'acildurum' && <PlaceholderTab label="Acil Durum Planı" description="Acil durum eylem planı, toplanma noktaları, tahliye krokisi ve senaryo bazlı tatbikat planları." />}
                     {activeTab === 'atamalar' && <AssignmentsTab companyId={id!} />}
-                    {activeTab === 'denetim' && <PlaceholderTab label="Saha Denetimleri & Uygunsuzluk Raporları" description="İSG uzmanı tarafından yerinde yapılan denetimler, tespit edilen uygunsuzluklar ve düzeltici faaliyet takibi." />}
+                    {activeTab === 'denetim' && <SahaDenetimleriTab companyId={id!} />}
                     {activeTab === 'kaza' && <PlaceholderTab label="İş Kazaları & Ramak Kala" description="Kaza bildirimleri, ramak kala raporları, kök neden analizi ve istatistikler." />}
                     {activeTab === 'periyodik' && <PlaceholderTab label="Periyodik Kontroller & Ortam Ölçümleri" description="Makine/ekipman periyodik kontrolleri, gürültü-toz-kimyasal ortam ölçümleri." />}
                     {activeTab === 'planlar' && <PlansTab />}

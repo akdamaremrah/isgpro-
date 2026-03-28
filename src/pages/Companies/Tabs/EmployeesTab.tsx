@@ -5,7 +5,7 @@ import styles from './EmployeesTab.module.css';
 import { API_BASE } from '../../../config/api';
 
 
-import { usePersonnelList, useDeletePersonnel, useBulkDeletePersonnel, useBulkUploadPersonnel } from '../../../hooks/usePersonnel';
+import { usePersonnelList, useAddPersonnel, useUpdatePersonnel, useDeletePersonnel, useBulkDeletePersonnel, useBulkUploadPersonnel } from '../../../hooks/usePersonnel';
 import { toast } from 'sonner';
 import { useScrollLock } from '../../../hooks/useScrollLock';
 
@@ -17,6 +17,8 @@ interface EmployeesTabProps {
 const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChange }) => {
     const navigate = useNavigate();
     const { data: personnel = [], isLoading: loading } = usePersonnelList(companyId);
+    const addMutation = useAddPersonnel(companyId);
+    const updateMutation = useUpdatePersonnel(companyId);
     const deleteMutation = useDeletePersonnel(companyId);
     const bulkDeleteMutation = useBulkDeletePersonnel(companyId);
     const uploadMutation = useBulkUploadPersonnel(companyId);
@@ -59,7 +61,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChang
             dogumTarihi: '',
             iseGiris: '',
             gsm: '',
-            bloodType: 'A+',
+            bloodType: '',
             educationLevel: 'Lise',
             maritalStatus: 'Bekar',
             disabilityStatus: 'Yok',
@@ -83,7 +85,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChang
             dogumTarihi: emp.birth_date || emp.dogumTarihi || '',
             iseGiris: emp.hire_date || emp.iseGiris || '',
             gsm: emp.phone_number || emp.gsm || '',
-            bloodType: emp.blood_type || emp.bloodType || 'A+',
+            bloodType: emp.blood_type || emp.bloodType || '',
             educationLevel: emp.education_level || emp.educationLevel || 'Lise',
             maritalStatus: emp.marital_status || emp.maritalStatus || 'Bekar',
             disabilityStatus: emp.disability_status || emp.disabilityStatus || 'Yok',
@@ -95,31 +97,16 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChang
         setIsModalOpen(true);
     };
 
-    const handleSave = async (e: React.FormEvent) => {
+    const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        const url = modalMode === 'add'
-            ? `${API_BASE}/api/companies/${companyId}/personnel`
-            : `${API_BASE}/api/personnel/${selectedId}`;
-        const method = modalMode === 'add' ? 'POST' : 'PUT';
-
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (res.ok) {
-                setIsModalOpen(false);
-                toast.success(modalMode === 'add' ? 'Personel eklendi' : 'Personel güncellendi');
-                if (onPersonnelChange) onPersonnelChange();
-                // We should really use a mutation here for automatic invalidation
-                // But for now, let's trigger a refresh if we had a queryClient here
-            } else {
-                const data = await res.json();
-                toast.error(`Hata: ${data.error}`);
-            }
-        } catch (error) {
-            toast.error('Kayıt sırasında bir hata oluştu.');
+        const onSuccess = () => {
+            setIsModalOpen(false);
+            if (onPersonnelChange) onPersonnelChange();
+        };
+        if (modalMode === 'add') {
+            addMutation.mutate(formData, { onSuccess });
+        } else if (selectedId !== null) {
+            updateMutation.mutate({ id: selectedId, formData }, { onSuccess });
         }
     };
 
@@ -498,6 +485,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({ companyId, onPersonnelChang
                                     <div className={styles.formGroup}>
                                         <label>Kan Grubu</label>
                                         <select value={formData.bloodType} onChange={e => setFormData({ ...formData, bloodType: e.target.value })}>
+                                            <option value="">— Bilinmiyor —</option>
                                             <option value="A+">A+</option>
                                             <option value="A-">A-</option>
                                             <option value="B+">B+</option>

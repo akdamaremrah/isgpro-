@@ -17,9 +17,27 @@ const CompanyList: React.FC = () => {
     const suspendMutation = useSuspendCompany();
 
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number; openUp: boolean }>({ top: 0, right: 0, openUp: false });
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [selectedIds, setSelectedIds] = useState<any[]>([]);
     const [hazardFilter, setHazardFilter] = useState<string | null>(null);
+
+    // Gizleme
+    const LS_HIDDEN = 'isg_hidden_companies';
+    const [hiddenIds, setHiddenIds] = useState<number[]>(() => {
+        try { return JSON.parse(localStorage.getItem(LS_HIDDEN) ?? '[]'); } catch { return []; }
+    });
+    const [showHidden, setShowHidden] = useState(false);
+
+    const toggleHide = (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        setHiddenIds(prev => {
+            const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+            localStorage.setItem(LS_HIDDEN, JSON.stringify(next));
+            return next;
+        });
+        setOpenDropdownId(null);
+    };
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,9 +163,9 @@ const CompanyList: React.FC = () => {
     const tehPct = totalCount ? Math.round((tehlikeli / totalCount) * 100) : 0;
     const azPct = totalCount ? Math.round((azTehlikeli / totalCount) * 100) : 0;
 
-    const filteredCompanies = hazardFilter
-        ? companies.filter((c: any) => c.tehlikeSinifi === hazardFilter)
-        : companies;
+    const filteredCompanies = companies
+        .filter((c: any) => !hazardFilter || c.tehlikeSinifi === hazardFilter)
+        .filter((c: any) => showHidden ? hiddenIds.includes(c.id) : !hiddenIds.includes(c.id));
 
     return (
         <div className={styles.container}>
@@ -168,6 +186,14 @@ const CompanyList: React.FC = () => {
                             <span>Seçilenleri Sil ({selectedIds.length})</span>
                         </button>
                     )}
+                    {/* Gizlenenleri göster/gizle toggle */}
+                    <button
+                        className={`${styles.hiddenToggleBtn} ${showHidden ? styles.hiddenActiveBtn : ''}`}
+                        onClick={() => setShowHidden(v => !v)}
+                    >
+                        <MIcon name={showHidden ? 'visibility' : 'visibility_off'} size={18} />
+                        <span>{showHidden ? 'Tümünü Göster' : 'Gizlenenler'}</span>
+                    </button>
                     <button
                         className={styles.uploadBtn}
                         onClick={() => setIsUploadModalOpen(true)}
@@ -262,7 +288,7 @@ const CompanyList: React.FC = () => {
                         {[...filteredCompanies].sort((a, b) => (a.unvan || '').trim().localeCompare((b.unvan || '').trim(), 'tr-TR')).map((co) => (
                             <tr
                                 key={co.id}
-                                className={`${getHazardClassColor(co.tehlikeSinifi)} ${styles.clickableRow}`}
+                                className={`${getHazardClassColor(co.tehlikeSinifi)} ${styles.clickableRow} ${showHidden ? styles.hiddenRow : ''}`}
                                 onMouseDown={(e) => {
                                     (window as any).__rowDragOrigin = { x: e.clientX, y: e.clientY };
                                 }}
@@ -285,7 +311,12 @@ const CompanyList: React.FC = () => {
                                         onChange={() => handleSelectItem(co.id)}
                                     />
                                 </td>
-                                <td className={styles.fwBold}>{co.unvan}</td>
+                                <td className={styles.fwBold}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {co.unvan}
+                                        {showHidden && <span className={styles.hiddenBadge}><MIcon name="visibility_off" size={11} />Gizli</span>}
+                                    </span>
+                                </td>
                                 <td>
                                     <span className={`${styles.badge} ${getHazardBadgeClass(co.tehlikeSinifi)}`}>
                                         {co.tehlikeSinifi}
@@ -309,13 +340,36 @@ const CompanyList: React.FC = () => {
                                     >
                                         <button
                                             className={styles.actionMenuBtn}
-                                            onClick={() => setOpenDropdownId(openDropdownId === co.id ? null : co.id)}
+                                            onClick={(e) => {
+                                                if (openDropdownId === co.id) {
+                                                    setOpenDropdownId(null);
+                                                    return;
+                                                }
+                                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                                const dropH = 220; // dropdown yaklaşık yüksekliği
+                                                const openUp = rect.bottom + dropH > window.innerHeight;
+                                                setDropdownPos({
+                                                    top: openUp ? rect.top - dropH : rect.bottom + 4,
+                                                    right: window.innerWidth - rect.right,
+                                                    openUp,
+                                                });
+                                                setOpenDropdownId(co.id);
+                                            }}
                                         >
                                             <MIcon name="more_horiz" size={20} />
                                         </button>
 
                                         {openDropdownId === co.id && (
-                                            <div className={styles.dropdownMenu}>
+                                            <div
+                                                ref={dropdownRef}
+                                                className={styles.dropdownMenu}
+                                                style={{
+                                                    position: 'fixed',
+                                                    top: dropdownPos.top,
+                                                    right: dropdownPos.right,
+                                                    zIndex: 9999,
+                                                }}
+                                            >
                                                 <button className={styles.dropdownItem} onClick={(e) => { e.stopPropagation(); navigate(`/companies/${co.id}`); }}>
                                                     <MIcon name="visibility" size={16} /> Görüntüle
                                                 </button>
@@ -324,6 +378,11 @@ const CompanyList: React.FC = () => {
                                                 </button>
                                                 <button className={styles.dropdownItem} onClick={(e) => handleSuspend(e, co.id)}>
                                                     <MIcon name="pause_circle" size={16} /> {co.durum === 'Aktif' ? 'Askıya Al' : 'Aktifleştir'}
+                                                </button>
+                                                <div className={styles.dropdownDivider}></div>
+                                                <button className={`${styles.dropdownItem} ${styles.textMuted}`} onClick={(e) => toggleHide(e, co.id)}>
+                                                    <MIcon name={hiddenIds.includes(co.id) ? 'visibility' : 'visibility_off'} size={16} />
+                                                    {hiddenIds.includes(co.id) ? 'Gizlemeyi Kaldır' : 'Listeden Gizle'}
                                                 </button>
                                                 <div className={styles.dropdownDivider}></div>
                                                 <button className={`${styles.dropdownItem} ${styles.textDanger}`} onClick={(e) => handleDelete(e, co.id)}>
@@ -336,10 +395,14 @@ const CompanyList: React.FC = () => {
                             </tr>
                         ))}
 
-                        {companies.length === 0 && (
+                        {filteredCompanies.length === 0 && (
                             <tr>
                                 <td colSpan={8} className={styles.emptyState}>
-                                    Henüz kayıtlı firma yok. "Yeni Firma Ekle" butonunu kullanın.
+                                    {showHidden
+                                        ? 'Gizlenmiş firma bulunmuyor.'
+                                        : companies.length === 0
+                                            ? 'Henüz kayıtlı firma yok. "Yeni Firma Ekle" butonunu kullanın.'
+                                            : 'Bu filtreye uyan firma bulunamadı.'}
                                 </td>
                             </tr>
                         )}

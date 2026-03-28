@@ -141,6 +141,26 @@
     border-color: rgba(99, 102, 241, 0.2);
 }
 
+/* Kontrol listesi hazır olan kart — yeşil glow */
+.cardReady {
+    border-color: #86efac !important;
+    box-shadow: var(--shadow-sm), 0 0 0 1px #86efac, 0 4px 20px -4px rgba(34, 197, 94, 0.25);
+}
+.cardReady:hover {
+    border-color: #4ade80 !important;
+    box-shadow: var(--shadow-xl), 0 0 0 1px #4ade80, 0 8px 32px -4px rgba(34, 197, 94, 0.35);
+}
+/* Sol kenar çizgisi */
+.cardReady::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    border-radius: 3px 0 0 3px;
+}
+
 .cardHeader {
     display: flex;
     justify-content: space-between;
@@ -231,7 +251,7 @@
     text-align: center;
 }
 
-/* Modal */
+/* ── Modal ──────────────────────────────────────────────────────────────────── */
 .modalOverlay {
     position: fixed;
     inset: 0;
@@ -248,8 +268,8 @@
     background: var(--bg-surface);
     border-radius: var(--radius-2xl);
     width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
+    max-width: 900px;
+    max-height: 92vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -257,33 +277,103 @@
 }
 
 .modalHeader {
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 1.75rem;
     border-bottom: 1px solid var(--border-light);
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.modalHeaderLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.modalHeaderRight {
+    display: flex;
     align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.modalCatTag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: var(--accent-muted);
+    color: var(--accent);
+    width: fit-content;
 }
 
 .modalHeader h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--text-primary);
     margin: 0;
+    line-height: 1.4;
 }
 
 .closeBtn {
     font-size: 2rem;
+    line-height: 1;
     color: var(--text-muted);
     background: none;
     transition: color 0.2s;
+    flex-shrink: 0;
+    padding: 0 0.25rem;
 }
 
-.closeBtn:hover {
-    color: var(--text-primary);
+.closeBtn:hover { color: var(--text-primary); }
+
+/* ── Tabs ── */
+.modalTabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-surface);
+    padding: 0 1.75rem;
 }
 
+.modalTab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    margin-bottom: -1px;
+}
+
+.modalTab:hover { color: var(--text-primary); }
+
+.modalTab.activeTab {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tabBadge {
+    background: var(--accent);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-full);
+}
+
+/* ── Body ── */
 .modalBody {
-    padding: 2rem;
+    flex: 1;
     overflow-y: auto;
     background: var(--bg-main);
 }
@@ -291,37 +381,937 @@
 .contentArea {
     white-space: pre-wrap;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.8;
     color: var(--text-secondary);
+    padding: 2rem;
 }
 
-.modalFooter {
-    padding: 1.5rem 2rem;
-    border-top: 1px solid var(--border-light);
-    background: var(--bg-surface);
+/* ── Checklist Save Footer ── */
+.clSaveFooter {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 1.5px solid #bbf7d0;
+    border-radius: 12px;
+    margin-top: 0.5rem;
 }
+
+.clSaveFooterInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #166534;
+}
+
+.clSaveFooterInfo strong { font-weight: 700; }
 
 .linkBtn {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     background: var(--gradient-accent);
     color: white;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius-lg);
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     box-shadow: var(--shadow-accent);
     transition: all 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .linkBtn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-accent-lg);
+}
+
+/* ── Card saved badge ── */
+.cardSavedBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #16a34a;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-full);
+    padding: 0.2rem 0.65rem;
+    width: fit-content;
+}
+
+/* ════════════════════════════════════════
+   CHECKLIST
+════════════════════════════════════════ */
+.clContainer {
+    padding: 1.5rem 1.75rem;
+    min-height: 300px;
+}
+
+/* Loading */
+.clLoading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.clLoading p {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.clLoading span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.clSpinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid var(--accent-muted);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error */
+.clError {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    text-align: center;
+    color: #ef4444;
+}
+
+.clRetryBtn {
+    padding: 0.6rem 1.25rem;
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.clRetryBtn:hover { background: #fee2e2; }
+
+/* Empty / Generate prompt */
+.clEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.clEmpty h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.clEmpty p {
+    max-width: 480px;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.clGenerateBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    background: var(--gradient-accent);
+    color: white;
+    padding: 0.85rem 2rem;
+    border-radius: var(--radius-xl);
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-accent);
+    transition: all 0.2s;
+}
+
+.clGenerateBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-accent-lg);
+}
+
+/* ── Toolbar ── */
+.clToolbar {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+}
+
+.clProgress {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.clProgressStats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.uygunStat    { color: #16a34a; display: flex; align-items: center; gap: 0.25rem; }
+.uygunsuzStat { color: #dc2626; display: flex; align-items: center; gap: 0.25rem; }
+.naStat       { color: #94a3b8; display: flex; align-items: center; gap: 0.25rem; }
+
+.clProgressBar {
+    height: 7px;
+    background: var(--border-light);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.clProgressFill {
+    height: 100%;
+    background: var(--gradient-accent);
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+.clToolbarActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.clExcelBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: white;
+    background: #16a34a;
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+    border: none;
+}
+
+.clExcelBtn:hover { background: #15803d; transform: translateY(-1px); }
+
+.clRegenBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    transition: all 0.2s;
+}
+
+.clRegenBtn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+
+/* Yeniden Oluştur — görünür etiketli buton */
+.clRegenVisibleBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border: 1.5px solid var(--border-light);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.clRegenVisibleBtn:hover {
+    color: #6366f1;
+    border-color: #6366f1;
+    background: #f5f3ff;
+}
+
+/* Banner aksiyon grubu */
+.clBannerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Body */
+.clBody { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Section */
+.clSection {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.clSectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    background: var(--gradient-surface);
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+/* Sabit genişlik ikon yuvası — yükseklik kısıtı YOK, sadece genişlik sabitlenir */
+.clSectionIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    min-width: 22px;
+    flex-shrink: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.clSectionHeader h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex: 1;
+    margin: 0;
+}
+
+.clSectionCount {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--bg-main);
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-light);
+}
+
+.clRows { display: flex; flex-direction: column; }
+
+/* Row */
+.clRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s;
+}
+
+.clRow:last-child { border-bottom: none; }
+
+.clRow_uygun    { background: #f0fdf4 !important; }
+.clRow_uygunsuz { background: #fff1f2 !important; }
+.clRow_na       { background: #f8fafc !important; }
+
+.clRowLeft {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.clIndex {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.clContent { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+
+.clTop {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.clMadde {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--accent);
+    background: var(--accent-muted);
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.clKontrol {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Sayısal değer highlight — JS ile enjekte ediliyor */
+.clKontrol :global(.num-highlight) {
+    display: inline-block;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border-radius: 3px;
+    padding: 0 3px;
+    font-size: 0.82rem;
+    letter-spacing: -0.01em;
+}
+
+.clRef {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    color: #64748b;
+    line-height: 1.45;
+    margin-top: 0.1rem;
+    padding: 0.3rem 0.55rem;
+    background: #f8fafc;
+    border-left: 2px solid #cbd5e1;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Risk badge */
+.riskBadge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.riskHigh { background: #fee2e2; color: #dc2626; }
+.riskMid  { background: #fef3c7; color: #d97706; }
+.riskLow  { background: #dcfce7; color: #16a34a; }
+
+/* 3-option buttons */
+.clOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.clOpt {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border-light);
+    background: var(--bg-main);
+    color: var(--text-muted);
+    white-space: nowrap;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+.clOpt:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+.optUygun {
+    background: #f0fdf4 !important;
+    border-color: #16a34a !important;
+    color: #16a34a !important;
+    font-weight: 700;
+}
+
+.optUygunsuz {
+    background: #fff1f2 !important;
+    border-color: #dc2626 !important;
+    color: #dc2626 !important;
+    font-weight: 700;
+}
+
+.optNa {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #64748b !important;
+    font-weight: 700;
+}
+
+/* ── Firma seçim banner (readonly mod) ── */
+.clSelectCompanyBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: var(--radius-xl);
+    flex-wrap: wrap;
+}
+
+.clSelectCompanyLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    flex: 1;
+    min-width: 0;
+}
+
+.clSelectCompanyLeft strong {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.1rem;
+}
+
+.clSelectCompanyLeft span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* ── Aktif firma banner (fill mod) ── */
+.clActiveFirmaBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border: 1.5px solid #93c5fd;
+    border-radius: var(--radius-xl);
+    flex-wrap: wrap;
+}
+
+.clActiveFirmaLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.clActiveFirmaIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-lg);
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.clActiveFirmaLabel {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #2563eb;
+    margin-bottom: 0.1rem;
+}
+
+.clActiveFirmaName {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.clActiveFirmaActions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.clSaveBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    background: #16a34a;
+    border-radius: var(--radius-lg);
+    padding: 0.65rem 1.4rem;
+    transition: all 0.2s;
+    border: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.clSaveBtn:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4); }
+
+.clChangeFirmaBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.clChangeFirmaBtn:hover { background: #bfdbfe; }
+
+/* ── Toolbar top row ── */
+.clToolbarTop {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* ── New toolbar buttons ── */
+.clApplyBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    background: var(--gradient-accent);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.9rem;
+    transition: all 0.2s;
+    border: none;
+    white-space: nowrap;
+    box-shadow: var(--shadow-accent);
+}
+.clApplyBtn:hover { transform: translateY(-1px); box-shadow: var(--shadow-accent-lg); }
+
+.clTmplBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7c3aed;
+    background: #f5f3ff;
+    border: 1.5px solid #c4b5fd;
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.clTmplBtn:hover { background: #ede9fe; transform: translateY(-1px); }
+
+/* ── İnfografik ── */
+.clInfographic {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.donutWrap {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-shrink: 0;
+}
+
+.donut {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.donutInner {
+    position: absolute;
+    inset: 14px;
+    border-radius: 50%;
+    background: var(--bg-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.donutPct {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.donutSub {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.donutLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.clComplianceScore {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 2rem;
+    border-left: 1px solid var(--border-light);
+}
+
+.complianceLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.complianceValue {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.complianceNote {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* ── Firma Modalı ── */
+.compModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.compModalBox {
+    background: var(--bg-surface);
+    border-radius: var(--radius-2xl);
+    width: 100%;
+    max-width: 480px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.compModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.compModalHeader h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.2rem;
+}
+
+.compModalHeader p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.compModalSearch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-main);
+}
+
+.compModalSearch input {
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    flex: 1;
+    outline: none;
+}
+
+.compList {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.compLoading, .compEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.compItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    background: transparent;
+    transition: background 0.15s;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}
+
+.compItem:last-child { border-bottom: none; }
+.compItem:hover { background: var(--accent-muted); }
+
+.compItemIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.compItemInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.compItemName {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.compItemSector {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.compItemArrow {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+/* ── Success Toast ── */
+.successToast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #052e16;
+    color: #dcfce7;
+    padding: 0.85rem 1.5rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 2000;
+    white-space: nowrap;
 }
 
 @media (max-width: 640px) {
@@ -330,4 +1320,10 @@
         align-items: flex-start;
         gap: 1.5rem;
     }
+
+    .modalOverlay { padding: 0.5rem; }
+    .modalContent { max-height: 98vh; border-radius: var(--radius-xl); }
+    .clContainer  { padding: 1rem; }
+    .clInfographic { flex-direction: column; }
+    .clComplianceScore { border-left: none; border-top: 1px solid var(--border-light); padding-left: 0; padding-top: 1rem; }
 }

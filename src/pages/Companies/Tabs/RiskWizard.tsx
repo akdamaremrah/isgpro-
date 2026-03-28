@@ -65,7 +65,7 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
     const [saving, setSaving] = useState(false);
 
     // Mode
-    const [inputMode, setInputMode] = useState<InputMode>('free');
+    const [inputMode, setInputMode] = useState<InputMode>('guided');
 
     // Guided mode state
     const [guidedStage, setGuidedStage] = useState<GuidedStage>('sector');
@@ -180,20 +180,22 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
         const generatedPrompt = buildGuidedPrompt();
         setPromptText(generatedPrompt);
 
-        // Build pre-mapped hazard categories from selected items
+        // Her item için "aktivite: tehlike" formatında ayrı birim oluştur (global dedup yok)
         const preCategories: ChecklistCategory[] = [];
         guidedSelectedPhaseObjs.forEach(phase => {
             phase.subPhases.forEach(sp => {
-                const hazards: string[] = [];
+                const hazardUnits: string[] = [];
                 sp.items.forEach(item => {
                     if (guidedItems.has(item.id)) {
-                        item.hazards.forEach(h => { if (!hazards.includes(h)) hazards.push(h); });
+                        item.hazards.forEach(h => {
+                            hazardUnits.push(`${item.label}: ${h}`);
+                        });
                     }
                 });
-                if (hazards.length > 0) {
+                if (hazardUnits.length > 0) {
                     preCategories.push({
                         bolum_adi: `${phase.label} — ${sp.label}`,
-                        bakilacak_tehlikeler: hazards,
+                        bakilacak_tehlikeler: hazardUnits,
                         tipik_tedbir_mantigi: `${sp.label} kapsamında öngörülen tehlike kaynakları`
                     });
                 }
@@ -380,42 +382,17 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                         <div className={styles.aiIconWrapper}>
                             <MIcon name="auto_awesome" size={32} className={styles.aiIcon} />
                         </div>
-                        <h2 className={styles.stepTitleMain}>Yapay Zeka (LLM) Risk Analizi</h2>
+                        <h2 className={styles.stepTitleMain}>Risk Değerlendirme Otomasyonu</h2>
                         <p className={styles.stepDescMain}>
-                            Faaliyetinizi serbest metin ile tarif edin ya da rehberli mod ile adım adım ilerleyin.
+                            Sektör ve modül seçerek adım adım risk değerlendirmesi oluşturun.
                         </p>
                     </div>
 
-                    {/* Mode Toggle */}
-                    <div className={styles.modeToggle}>
-                        <button
-                            className={`${styles.modeBtn} ${inputMode === 'free' ? styles.modeBtnActive : ''}`}
-                            onClick={() => setInputMode('free')}
-                        >
-                            <MIcon name="edit_note" size={16} /> Serbest Metin
-                        </button>
-                        <button
-                            className={`${styles.modeBtn} ${inputMode === 'guided' ? styles.modeBtnActive : ''}`}
-                            onClick={() => { setInputMode('guided'); setGuidedStage('sector'); }}
-                        >
-                            <MIcon name="account_tree" size={16} /> Rehberli Mod
-                        </button>
-                    </div>
 
                     {/* ── SERBEST METİN MODU ── */}
                     {inputMode === 'free' && (
                         <>
                             <div className={styles.aiInputBox}>
-                                <div className={styles.scopeSelector}>
-                                    <label className={styles.scopeLabel}>Tarama Kapsamı:</label>
-                                    <div className={styles.scopeChips}>
-                                        {(['general', 'specific', 'machine'] as const).map(s => (
-                                            <button key={s} className={`${styles.scopeChip} ${scope === s ? styles.activeScope : ''}`} onClick={() => setScope(s)}>
-                                                {s === 'general' ? 'Genel Tesis Taraması' : s === 'specific' ? 'Nokta Atışı (Spesifik İşlem)' : 'Makine / Ekipman Analizi'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
                                 <label>Yapılan İş / Faaliyet / Ekipman / Ortam Giriniz</label>
                                 <textarea
                                     className={styles.aiTextarea}
@@ -523,7 +500,25 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                                     <h3 className={styles.guidedStageTitle}>
                                         <span style={{ color: guidedSector?.color }}>{guidedSubtype.label}</span> — Hangi aşamalar kapsama dahil?
                                     </h3>
-                                    <p className={styles.guidedStageHint}>Birden fazla aşama seçebilirsiniz.</p>
+                                    <div className={styles.guidedSelectAllRow}>
+                                        <button
+                                            className={styles.btnSelectAll}
+                                            type="button"
+                                            onClick={() => {
+                                                const allIds = guidedSubtype.phases.map(p => p.id);
+                                                const allSelected = allIds.every(id => guidedPhases.has(id));
+                                                if (allSelected) {
+                                                    setGuidedPhases(new Set());
+                                                } else {
+                                                    setGuidedPhases(new Set(allIds));
+                                                }
+                                            }}
+                                        >
+                                            <MIcon name={guidedSubtype.phases.every(p => guidedPhases.has(p.id)) ? 'deselect' : 'select_all'} size={16} />
+                                            {guidedSubtype.phases.every(p => guidedPhases.has(p.id)) ? 'Tümünü Kaldır' : 'Tümünü Seç'}
+                                        </button>
+                                        <p className={styles.guidedStageHint}>Birden fazla aşama seçebilirsiniz.</p>
+                                    </div>
                                     <div className={styles.phaseList}>
                                         {guidedSubtype.phases.map(phase => {
                                             const checked = guidedPhases.has(phase.id);
@@ -532,7 +527,7 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                                                     style={checked ? { borderColor: guidedSector?.color, backgroundColor: (guidedSector?.color ?? '#6366f1') + '10' } : {}}>
                                                     <input type="checkbox" checked={checked} onChange={() => handleGuidedPhaseToggle(phase.id)} className={styles.phaseCheckbox} />
                                                     <MIcon name={phase.icon} size={18} style={{ color: checked ? guidedSector?.color : undefined }} />
-                                                    <span>{phase.label}</span>
+                                                    <span className={styles.phaseLabel}>{phase.label}</span>
                                                     <span className={styles.phaseActivityCount}>{getPhaseItemCount(phase)} öğe</span>
                                                 </label>
                                             );
@@ -626,18 +621,6 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                                                 })}
                                             </div>
                                         ))}
-                                    </div>
-
-                                    {/* Kapsam seçici */}
-                                    <div className={styles.guidedScopeRow}>
-                                        <label className={styles.scopeLabel}>Tarama Kapsamı:</label>
-                                        <div className={styles.scopeChips}>
-                                            {(['general', 'specific', 'machine'] as const).map(s => (
-                                                <button key={s} className={`${styles.scopeChip} ${scope === s ? styles.activeScope : ''}`} onClick={() => setScope(s)}>
-                                                    {s === 'general' ? 'Genel Tesis Taraması' : s === 'specific' ? 'Nokta Atışı' : 'Makine / Ekipman'}
-                                                </button>
-                                            ))}
-                                        </div>
                                     </div>
 
                                     {guidedItems.size > 0 && (

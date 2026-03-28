@@ -1,10 +1,19 @@
 import os
-from flask import Flask, jsonify, request, send_from_directory
+import time
+import json
+import re
+import concurrent.futures
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()  # .env dosyasını en başta yükle
+
+from flask import Flask, jsonify, request, send_from_directory, send_file
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from models import (
-    db, Company, CompanyProfessional, User, Personnel, GenderEnum, 
-    RiskAssessment, RiskStatusEnum, calculate_service_minutes, Assignment, 
+    db, Company, CompanyProfessional, User, Personnel, GenderEnum,
+    RiskAssessment, RiskStatusEnum, calculate_service_minutes, Assignment,
     AssignmentTypeEnum, RoleEnum, NaceCode, DangerClass, City, District,
     HealthStatusEnum, DocumentTypeEnum, TrainingDocument, TrainingDocTypeEnum,
     HealthDocument, HealthDocTypeEnum
@@ -14,7 +23,6 @@ import pandas as pd
 import io
 import requests
 from sqlalchemy import func
-from flask import send_file
 from services.webhook_emitter import emit_event
 
 app = Flask(__name__)
@@ -2089,15 +2097,6 @@ def generate_risks_from_wizard(company_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-import time
-import json
-import re
-import os
-import google.generativeai as genai
-import concurrent.futures
-from dotenv import load_dotenv
-
-load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-pro-preview")
@@ -2132,7 +2131,7 @@ def call_openrouter(system_instruction, prompt_text):
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
             json=data,
-            timeout=60
+            timeout=120
         )
         response.raise_for_status()
         result = response.json()
@@ -2140,6 +2139,233 @@ def call_openrouter(system_instruction, prompt_text):
     except Exception as e:
         print(f"OpenRouter Error: {e}")
         return None
+
+@app.route('/api/generate-regulation-checklist', methods=['POST'])
+def generate_regulation_checklist():
+    """Verilen yönetmelik için profesyonel denetim kontrol listesi üretir."""
+    if not GEMINI_API_KEY:
+        return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
+
+    data = request.get_json()
+    title    = data.get('title', '')
+    category = data.get('category', '')
+    content  = data.get('content', '')
+
+    system_instruction = """Sen Türkiye'deki İSG mevzuatı ve teknik standartlar konusunda 20+ yıl deneyimli, lisanslı A sınıfı İSG uzmanı ve baş denetçisin.
+Eğitim aldığın ve yürürlükteki tüm Türk İSG yönetmelikleri, Çalışma ve Sosyal Güvenlik Bakanlığı tebliğleri ve ilgili teknik standartlar hakkında eksiksiz bilgiye sahipsin.
+
+━━━ GÖREV TANIMI ━━━
+Verilen yönetmelik için SAHADAKİ denetçinin birebir kullanabileceği, teknik derinlikte, madde numarası referanslı, SAYISAL EŞİK DEĞERLERİ İÇEREN eksiksiz bir denetim kontrol listesi üret.
+
+━━━ AŞAMA 1 — YÖNETMELİĞİ ZİHİNDE ANALİZ ET ━━━
+Kontrol listesini oluşturmadan önce aşağıdaki soruları YANITLA (bu yanıtları JSON'a YAZMA, sadece düşün):
+a) Bu yönetmelik hangi spesifik konuları/varlıkları düzenliyor? (örn: ekranlı araçlarda → ekran, klavye, masa, sandalye, mola, göz muayenesi, aydınlatma, sıcaklık, nem, gürültü)
+b) Yönetmeliğin tüm bölüm/madde başlıkları neler? Her birini listele.
+c) Hangi sayısal eşik değerleri var? (örn: max. lüks, min. cm, periyot, sıcaklık aralığı)
+d) Hangi belge/kayıt tutma yükümlülükleri var?
+e) Hangi periyodik kontrol/test/muayene zorunlulukları var?
+f) Hangi eğitim ve yetkilendirme gereklilikleri var?
+Şimdi bu analize dayanarak JSON'u oluştur.
+
+━━━ YAZIM KURALLARI ━━━
+• Eylem/durum ifadesiyle BİTMELİ: "yapılmıştır / mevcuttur / sağlanmıştır / belgelenmiştir / uygulanmaktadır / doğrulanmıştır / tutulmaktadır / kontrol edilmiştir"
+• DOĞRU: "Çalışma yüzeyi yüksekliği 72-78 cm aralığında ayarlanabilir nitelikte olup ölçüm ile doğrulanmıştır."
+• YANLIŞ: "Masa yüksekliği uygun mu?"
+• Denetçi sahada tek bakışta "Uygun / Uygun Değil / Uygulanmıyor" diyebilecek kadar somut olmalı
+
+━━━ SAYISAL DEĞER ZORUNLULUĞU ━━━
+Her maddede mümkünse şunlardan birini yaz:
+• Boyut/mesafe: "en az 120 cm", "min. 72 cm", "maks. 10 m²/kişi"
+• Sıcaklık/nem: "20-26°C", "%40-70 bağıl nem"
+• Aydınlatma: "en az 300 lüks", "500 lüks iş yüzeyinde", "kamaşma indeksi UGR<19"
+• Gürültü: "85 dB(A) maruziyet sınırı", "Lep,d maks. 87 dB(A)"
+• Periyot/süre: "yılda 1 kez", "2 saatte bir 15 dakika", "her 4 yılda"
+• Kapasite: "6 kg KKÖ", "1 adet / 200 m²", "min. 34A-233B-C"
+• Elektrik/basınç: "230 V ±10%", "IP44", "6 bar"
+• Tarih: "son 12 ay içinde", "geçerlilik süresi dolmamış"
+
+━━━ KAPSAM KURALLARI ━━━
+• Her bölüm 8-12 madde — AZ MADDE KESİNLİKLE KABUL EDİLEMEZ
+• Minimum 8, maksimum 15 bölüm — her alt konu ayrı bölüm
+• Yönetmeliğe ÖZGÜ tüm varlıkları kapsayan bölümler yap:
+  - Ekranlı Araçlar → Ekran, Klavye/Mouse, Masa/Çalışma yüzeyi, Sandalye/Oturma, Aydınlatma, Isı/Nem/Hava, Gürültü, Yazılım/Arayüz, Mola programı, Göz muayenesi, Hamile/Risk grubu
+  - Yangından Korunma → Kaçış yolları, Sprinkler, Yangın kapıları, Söndürücüler, Tahliye planı, Bina sınıflandırma, Elektrik tesisatı, Acil aydınlatma, Yangın kompartımanı, Tatbikat
+  - Kimyasal Maddeler → Depolama, Etiketleme, GBF, KKD, Maruziyet ölçümü, Atık yönetimi, Acil durum, Sağlık gözetimi
+  (diğer yönetmelikler için de benzer özel analiz yap)
+• Madde numaraları kesin olarak doğru olmalı — bilmiyorsan "—" yaz
+• TS EN / ISO / IEC / NFPA / TSE standartlarına somut atıf
+• Belge/kayıt yükümlülükleri, periyodik kontroller, eğitim ayrı maddeler
+• İdari para cezası riski taşıyan maddeler mutlaka dahil
+• Türkçe, teknik terminoloji
+• SADECE JSON — başka hiçbir metin ekleme
+
+━━━ JSON FORMAT ━━━
+[
+  {
+    "section": "Bölüm Başlığı",
+    "icon": "AŞAĞIDAN_BİR_İKON",
+    "items": [
+      {
+        "madde": "Md. X/Y veya —",
+        "kontrol": "Sayısal eşik içeren, eylem/durum ifadesiyle biten somut tespit cümlesi",
+        "referans": "TS EN XXXX / ISO YYYY / ilgili teknik gereklilik ve limit değeri",
+        "risk_seviyesi": "yüksek|orta|düşük"
+      }
+    ]
+  }
+]
+
+İKON LİSTESİ (SADECE bunlardan seç):
+description, gavel, health_and_safety, engineering, warning, fire_extinguisher, local_fire_department,
+medical_services, school, assignment, fact_check, verified_user, security, policy, report,
+build, construction, electrical_services, bolt, water, air, thermostat, speed, science,
+inventory_2, warehouse, local_shipping, directions_car, business_center, badge, groups,
+monitor_heart, emergency, accessible, visibility, lock, key, admin_panel_settings,
+folder, article, checklist, task_alt, done_all, rule, list_alt, format_list_bulleted,
+settings, tune, handyman, plumbing, architecture, foundation, domain, apartment,
+eco, recycling, compost, public, grass, agriculture, landscape, wb_sunny,
+electric_bolt, cable, power, battery_charging_full, sensors, router, devices,
+calculate, straighten, scale, biotech, microscope, lab_research, hub"""
+
+    # İçerik çok uzunsa kırp
+    if content and len(content) > 4000:
+        content = content[:4000] + '\n[...metin kısaltıldı]'
+
+    content_section = ('Yönetmelik Metni/Özeti:\n' + content) if content else ''
+    prompt = f"""YÖNETMELİK: {title}
+KATEGORİ: {category}
+{content_section}
+
+GÖREV: Bu yönetmeliğin tüm konularını (madde madde) zihinsel olarak tara. Yönetmeliğin adından ve bilgi birikiminden yararlanarak:
+
+▶ TEMEL METİN ANALİZİ:
+• Bu yönetmeliğin düzenlediği TÜM varlıkları/ekipmanları/ortamları belirle
+  (örn. ekranlı araçlarda: monitör, klavye, fare, masa, sandalye, ayak desteği, aydınlatma, panjur/perde, klima, gürültü kaynakları, yazılım arayüzü)
+• Her bölüm için yönetmeliğe ÖZGÜ maddeler yaz — genel/jenerik maddeler kabul edilemez
+• BU yönetmeliğin getirdiği spesifik yükümlülükleri sorgula
+
+▶ EK/CETVEL ANALİZİ (ÇOK ÖNEMLİ):
+Bu yönetmeliğin eklerini/cetvellerini de bilgi birikiminden yararlanarak analiz et:
+• Minimum gereklilik tabloları (boyut, kapasite, mesafe cetvelleri)
+• Teknik şartname ekleri (malzeme sınıfları, test metotları)
+• Sınıflandırma/kategorilendirme tabloları (risk grupları, yapı sınıfları, tehlike kategorileri)
+• Formlar ve örnek belgeler (kayıt formları, bildirim şablonları)
+• Standart değerler listesi (maruziyet sınır değerleri, eylem değerleri)
+Eklerdeki her cetvel/tablo için ayrı bölüm veya maddeler oluştur.
+
+▶ ZORUNLU KAPSAM (hepsini dahil et):
+① Fiziksel/teknik gereklilikler — boyut, ağırlık, kapasite, malzeme sınıfı, dayanım süreleri
+② Çevre koşulları — sıcaklık, nem, aydınlatma (lüks), gürültü (dB), titreşim, hava kalitesi
+③ Ergonomi ve çalışma düzeni — bu yönetmeliğe özgü pozisyon/donanım gereklilikleri
+④ Periyodik muayene/test/ölçüm — ne, ne zaman, kim yapar, hangi belgeyle kanıtlanır
+⑤ Sağlık gözetimi — muayene türü, periyodu, özel gruplar (hamile, genç, engelli)
+⑥ Eğitim ve yetkilendirme — içerik, süre (saat), periyot, sertifika türü
+⑦ Belge ve kayıt tutma — tür, saklama süresi, format, imzalayanlar
+⑧ İşaret/etiket/uyarı — renk kodu, boyut, dil, yerleştirme yeri
+⑨ Acil durum prosedürleri — eylem planı, tatbikat sıklığı, sorumlular
+⑩ Yönetimsel/idari — komisyon, görevlendirme, bildirim, idari para cezası riski
+
+ÇIKTI: Sadece JSON — başka hiçbir şey yazma."""
+
+    def _parse_checklist_json(text: str):
+        """JSON parse + bracket extraction + normalize. sections listesi döndürür, başarısız olursa None."""
+        text = text.strip()
+        # Direkt parse
+        for attempt_text in [text]:
+            try:
+                parsed = json.loads(attempt_text)
+                break
+            except Exception:
+                parsed = None
+
+        if parsed is None:
+            # Bracket extraction
+            arr_start = text.find('[')
+            arr_end   = text.rfind(']')
+            if arr_start != -1 and arr_end != -1 and arr_start < arr_end:
+                candidate = text[arr_start:arr_end + 1]
+                candidate = re.sub(r',\s*([}\]])', r'\1', candidate)  # trailing commas
+                # Kırpılmış JSON'u kapat
+                open_b = candidate.count('{') - candidate.count('}')
+                open_s = candidate.count('[') - candidate.count(']')
+                candidate += '}' * max(0, open_b) + ']' * max(0, open_s)
+                try:
+                    parsed = json.loads(candidate)
+                except Exception:
+                    pass
+
+        if parsed is None:
+            # Object extraction
+            obj_start = text.find('{')
+            obj_end   = text.rfind('}')
+            if obj_start != -1 and obj_end != -1:
+                candidate = text[obj_start:obj_end + 1]
+                candidate = re.sub(r',\s*([}\]])', r'\1', candidate)
+                try:
+                    parsed = json.loads(candidate)
+                except Exception:
+                    pass
+
+        if parsed is None:
+            return None
+
+        # Normalize: list veya {"sections":[...]} kabul et
+        if isinstance(parsed, list):
+            return parsed
+        if isinstance(parsed, dict):
+            for key in ('sections', 'checklist', 'items', 'data'):
+                if key in parsed and isinstance(parsed[key], list):
+                    return parsed[key]
+            vals = [v for v in parsed.values() if isinstance(v, list)]
+            if vals:
+                return vals[0]
+        return None
+
+    model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
+    gen_config = genai.types.GenerationConfig(
+        temperature=0.2,          # Daha düşük → daha tutarlı, daha az halüsinasyon
+        max_output_tokens=14000,  # Kapsamlı yönetmelikler için yeterli
+        response_mime_type="application/json"
+    )
+
+    MAX_RETRIES = 3
+    last_error  = None
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = model.generate_content(prompt, generation_config=gen_config)
+            text     = response.text.strip() if response.text else ''
+            app.logger.info(
+                f"[attempt {attempt+1}] Regulation checklist ham çıktı "
+                f"({len(text)} kar, ilk 150): {text[:150]}"
+            )
+
+            sections = _parse_checklist_json(text)
+            if sections and len(sections) > 0:
+                # Her section'ın zorunlu alanları var mı kontrol et
+                valid = [
+                    s for s in sections
+                    if isinstance(s, dict) and s.get('section') and isinstance(s.get('items'), list)
+                ]
+                if valid:
+                    app.logger.info(
+                        f"Regulation checklist üretildi: {title[:50]} → "
+                        f"{len(valid)} bölüm (attempt {attempt+1})"
+                    )
+                    return jsonify({'sections': valid})
+
+            app.logger.warning(f"[attempt {attempt+1}] Geçerli section bulunamadı, tekrar deneniyor…")
+            last_error = 'Model geçerli bölüm içeriği üretemedi'
+
+        except Exception as e:
+            last_error = str(e)
+            app.logger.error(f"[attempt {attempt+1}] Regulation checklist hatası: {e}")
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(2 * (attempt + 1))  # 2s, 4s backoff
+
+    app.logger.error(f"Regulation checklist {MAX_RETRIES} denemede başarısız: {last_error}")
+    return jsonify({'error': f'Kontrol listesi oluşturulamadı: {last_error}'}), 500
+
 
 @app.route('/api/generate-checklist', methods=['POST'])
 def generate_checklist_ai():
@@ -2348,37 +2574,20 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
 """
     try:
         all_risks = []
-        chunk_size = 5  # Daha fazla detay için chunk boyutunu düşürdük
-        
+        chunk_size = 5   # Küçük chunk = ~15-20 satır çıktı = hızlı yanıt, timeout yok
+
         chunks = [selected_hazards[i:i + chunk_size] for i in range(0, len(selected_hazards), chunk_size)]
         
         def process_chunk(chunk, index):
             hazards_text = "\n".join([f"- {h}" for h in chunk])
             prompt_desc = f"Tesis/Bağlam: {context}\nSeçilen Tehlikeler:\n{hazards_text}"
-            
-            # 1. Try OpenRouter first
-            if OPENROUTER_API_KEY:
-                text = call_openrouter(system_instruction, prompt_desc)
-                if text:
-                    try:
-                        # Robust JSON Array Extraction
-                        start_idx = text.find('[')
-                        end_idx = text.rfind(']')
-                        if start_idx != -1 and end_idx != -1 and start_idx <= end_idx:
-                            text = text[start_idx:end_idx+1]
-                        
-                        text = re.sub(r',\s*}', '}', text)
-                        text = re.sub(r',\s*]', ']', text)
-                        return json.loads(text)
-                    except:
-                        pass # Fallback to Gemini below
 
-            # 2. Fallback to Gemini SDK
+            # Doğrudan Gemini kullan (OpenRouter 402 hatası verdiği için atlandı)
             if not GEMINI_API_KEY:
                 return []
 
             model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
-            
+
             max_retries = 3
             for attempt in range(max_retries):
                 try:
@@ -2391,21 +2600,19 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
                         )
                     )
                     text = response.text.strip()
-                    
-                    # Robust JSON Array Extraction
+
                     start_idx = text.find('[')
                     end_idx = text.rfind(']')
                     if start_idx != -1 and end_idx != -1 and start_idx <= end_idx:
                         text = text[start_idx:end_idx+1]
                     else:
-                        app.logger.warning(f"No JSON array brackets found in output. Output was: {text[:100]}...")
+                        app.logger.warning(f"Chunk {index+1}: JSON array bulunamadı. Çıktı: {text[:200]}")
                         text = '[]'
-                    
-                    # LLM JSON Hatalarını (Trailing Comma vs) regex ile temizle
+
                     text = re.sub(r',\s*}', '}', text)
                     text = re.sub(r',\s*]', ']', text)
-                    
-                    # JSON Truncation (Unterminated String) Recovery
+
+                    # Kesilmiş JSON kurtarma
                     if not text.endswith(']'):
                         if text.count('"') % 2 != 0:
                             text += '"'
@@ -2414,32 +2621,35 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
                             text = text[:last_brace_idx+1] + '\n]'
                         else:
                             text = '[]'
-                    
+
                     try:
                         chunk_risks = json.loads(text)
                         if isinstance(chunk_risks, list):
+                            app.logger.info(f"Chunk {index+1}/{len(chunks)}: {len(chunk_risks)} risk üretildi.")
                             return chunk_risks
                     except Exception as json_err:
-                        app.logger.error(f"Generate Chunk JSON Decode Error: {json_err}\nExtracted text: {text[:200]}")
-                    
+                        app.logger.error(f"Chunk {index+1} JSON parse hatası: {json_err} | Metin: {text[:300]}")
+
                     return []
-                    
-                except Exception as parse_e:
-                    app.logger.warning(f"Gemini Hatası (Chunk {index+1}, Attempt {attempt+1}): {parse_e}")
-                    time.sleep(2)
-                    if attempt == max_retries -1:
-                         app.logger.error(f"Generate Chunk Failed permanently: {parse_e}")
+
+                except Exception as e:
+                    app.logger.warning(f"Chunk {index+1} Gemini hatası (deneme {attempt+1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
+                        time.sleep(3 * (attempt + 1))  # 3s, 6s backoff
+                    else:
+                        app.logger.error(f"Chunk {index+1} kalıcı hata: {e}")
             return []
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(process_chunk, chunk, idx) for idx, chunk in enumerate(chunks)]
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    result = future.result()
-                    if result:
-                        all_risks.extend(result)
-                except Exception as e:
-                    app.logger.error(f"Parallel chunk error: {e}")
+        for idx, chunk in enumerate(chunks):
+            try:
+                result = process_chunk(chunk, idx)
+                if result:
+                    all_risks.extend(result)
+                    app.logger.info(f"Chunk {idx+1}/{len(chunks)}: {len(result)} risk üretildi.")
+            except Exception as e:
+                app.logger.error(f"Chunk {idx+1} hatası: {e}")
+            if idx < len(chunks) - 1:
+                time.sleep(0.5)  # Rate limit baskısını azalt
 
         return jsonify(all_risks), 200
 
@@ -2851,6 +3061,7 @@ def get_notifications():
     notifications.sort(key=lambda n: priority.get(n['type'], 3))
 
     return jsonify(notifications[:50]), 200
+
 
 setup_db()
 

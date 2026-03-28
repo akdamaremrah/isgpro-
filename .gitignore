@@ -44,3 +44,8 @@ venv/
 
 # Kullanıcı yüklemeleri
 backend/uploads/
+
+.vercel
+
+# Claude Code local settings
+.claude/settings.local.json

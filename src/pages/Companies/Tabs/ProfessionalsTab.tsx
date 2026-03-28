@@ -65,15 +65,23 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
 
     // Directory (existing professionals across all companies)
     const [directory, setDirectory] = useState<DirectoryEntry[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    // Backend role'u 'IGU'/'IYH'/'DSP' döndürüyor — form.role ile direkt karşılaştır
+    const sameRoleDirectory = directory.filter(d => d.role === form.role);
 
-    const filteredDirectory = searchQuery.length >= 2
-        ? directory.filter(d =>
-            d.professional_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (d.tc_kimlik_no && d.tc_kimlik_no.includes(searchQuery))
-        )
-        : [];
+    const applyDirectoryEntry = (d: typeof directory[0]) => {
+        // Backend zaten 'IGU'/'IYH'/'DSP' döndürüyor — doğrudan kullan
+        const roleKey = (d.role in ROLE_LABELS) ? d.role : 'IGU';
+        setForm({
+            ...form,
+            professional_name: d.professional_name,
+            role: roleKey,
+            tc_kimlik_no: d.tc_kimlik_no || '',
+            certificate_class: d.certificate_class || '',
+            certificate_number: d.certificate_number || '',
+            phone_number: d.phone_number || '',
+            email: d.email || '',
+        });
+    };
 
     const fetchDirectory = async () => {
         try {
@@ -117,8 +125,6 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
                 await fetchProfessionals();
                 setIsAddModalOpen(false);
                 setForm({ professional_name: '', role: 'IGU', contract_start_date: '', tc_kimlik_no: '', certificate_class: '', certificate_number: '', phone_number: '', email: '' });
-                setSearchQuery('');
-                setShowSuggestions(false);
             } else {
                 const err = await res.json();
                 alert('Hata: ' + (err.error || 'Bilinmeyen hata'));
@@ -311,57 +317,39 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
 
             {/* Add Modal */}
             {isAddModalOpen && (
-                <div className={styles.modalOverlay} onClick={() => { setIsAddModalOpen(false); setSearchQuery(''); setShowSuggestions(false); }}>
+                <div className={styles.modalOverlay} onClick={() => setIsAddModalOpen(false)}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h3>Yeni İSG Profesyoneli Ekle</h3>
-                            <button className={styles.closeBtn} onClick={() => { setIsAddModalOpen(false); setSearchQuery(''); setShowSuggestions(false); }}><MIcon name="close" size={20} /></button>
+                            <button className={styles.closeBtn} onClick={() => setIsAddModalOpen(false)}><MIcon name="close" size={20} /></button>
                         </div>
                         <div className={styles.modalBody}>
-                            {/* Search existing professionals */}
-                            <div className={styles.formGroup} style={{ position: 'relative' }}>
-                                <label>Mevcut Profesyonel Ara</label>
-                                <input
-                                    type="text"
-                                    className={styles.input}
-                                    placeholder="Ad soyad veya TC ile ara..."
-                                    value={searchQuery}
-                                    onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-                                    onFocus={() => setShowSuggestions(true)}
-                                />
-                                {showSuggestions && filteredDirectory.length > 0 && (
-                                    <div className={styles.suggestionList}>
-                                        {filteredDirectory.map(d => (
-                                            <div
+
+                            {/* Daha önce atanmış — hızlı seçim chip'leri */}
+                            {sameRoleDirectory.length > 0 && (
+                                <div className={styles.prevAssignedSection}>
+                                    <span className={styles.prevAssignedLabel}>
+                                        <MIcon name="people" size={13} />
+                                        Kayıtlı İSG Profesyonelleri
+                                    </span>
+                                    <div className={styles.prevAssignedChips}>
+                                        {sameRoleDirectory.map(d => (
+                                            <button
                                                 key={d.id}
-                                                className={styles.suggestionItem}
-                                                onClick={() => {
-                                                    const roleKey = Object.entries(ROLE_LABELS).find(([, v]) => v === d.role)?.[0] || 'IGU';
-                                                    setForm({
-                                                        ...form,
-                                                        professional_name: d.professional_name,
-                                                        role: roleKey,
-                                                        tc_kimlik_no: d.tc_kimlik_no || '',
-                                                        certificate_class: d.certificate_class || '',
-                                                        certificate_number: d.certificate_number || '',
-                                                        phone_number: d.phone_number || '',
-                                                        email: d.email || '',
-                                                    });
-                                                    setSearchQuery(d.professional_name);
-                                                    setShowSuggestions(false);
-                                                }}
+                                                type="button"
+                                                className={`${styles.prevChip} ${form.professional_name === d.professional_name ? styles.prevChipActive : ''}`}
+                                                onClick={() => applyDirectoryEntry(d)}
+                                                title={d.tc_kimlik_no ? `TC: ${d.tc_kimlik_no}` : ''}
                                             >
-                                                <span className={styles.suggestionName}>{d.professional_name}</span>
-                                                <span className={styles.suggestionMeta}>
-                                                    {d.role}{d.tc_kimlik_no ? ` · ${d.tc_kimlik_no}` : ''}
-                                                </span>
-                                            </div>
+                                                <MIcon name="person" size={13} />
+                                                {d.professional_name}
+                                            </button>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
-                            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.5rem 0' }} />
+                            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.25rem 0' }} />
 
                             <div className={styles.formGroup}>
                                 <label>Unvan *</label>
@@ -412,7 +400,7 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
                             </div>
                         </div>
                         <div className={styles.modalActions}>
-                            <button className={styles.btnSecondary} onClick={() => { setIsAddModalOpen(false); setSearchQuery(''); setShowSuggestions(false); }}>İptal</button>
+                            <button className={styles.btnSecondary} onClick={() => setIsAddModalOpen(false)}>İptal</button>
                             <button className={styles.btnPrimary} onClick={handleAdd} disabled={saving}>Kaydet</button>
                         </div>
                     </div>

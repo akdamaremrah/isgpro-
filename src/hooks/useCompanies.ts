@@ -19,7 +19,7 @@ export const useCompanies = () => {
     return useQuery<Company[]>({
         queryKey: ['companies'],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/companies`);
+            const res = await fetch(`${API_BASE}/api/companies`);
             if (!res.ok) throw new Error('Firmalar yüklenemedi');
             return res.json();
         },
@@ -30,7 +30,7 @@ export const useCompany = (id: string | undefined) => {
     return useQuery<Company>({
         queryKey: ['companies', id],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/companies/${id}`);
+            const res = await fetch(`${API_BASE}/api/companies/${id}`);
             if (!res.ok) throw new Error('Firma detayları yüklenemedi');
             return res.json();
         },
@@ -43,7 +43,7 @@ export const useDeleteCompany = () => {
 
     return useMutation({
         mutationFn: async (id: string) => {
-            const res = await fetch(`${API_BASE}/companies/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_BASE}/api/companies/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Firma silinemedi');
             return id;
         },
@@ -73,7 +73,7 @@ export const useSuspendCompany = () => {
 
     return useMutation({
         mutationFn: async (id: string) => {
-            const res = await fetch(`${API_BASE}/companies/${id}/suspend`, { method: 'PUT' });
+            const res = await fetch(`${API_BASE}/api/companies/${id}/suspend`, { method: 'PUT' });
             if (!res.ok) throw new Error('Firma durumu güncellenemedi');
             return id;
         },
