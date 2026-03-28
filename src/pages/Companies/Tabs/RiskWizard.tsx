@@ -243,33 +243,39 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt, scope })
             });
-            const data = await res.json();
-            if (res.ok) {
-                let finalChecklist: ChecklistCategory[] = data;
-                // Prepend pre-mapped hazard categories (from guided mode item selections)
-                if (preCategories && preCategories.length > 0) {
-                    finalChecklist = [...preCategories, ...finalChecklist];
-                }
-                if (selected.size > 0) {
-                    finalChecklist = [
-                        {
+            const init = await res.json();
+            if (!res.ok) { setAiError(init.error || 'Checklist oluşturulurken hata oluştu.'); return; }
+            // Poll for job completion
+            const jobId: string = init.job_id;
+            const deadline = Date.now() + 5 * 60 * 1000;
+            while (Date.now() < deadline) {
+                await new Promise(r => setTimeout(r, 2000));
+                const poll = await apiFetch(`${API_BASE}/api/jobs/${jobId}`);
+                const job = await poll.json();
+                if (job.status === 'done') {
+                    const rawData: ChecklistCategory[] = Array.isArray(job.result) ? job.result : [];
+                    let finalChecklist: ChecklistCategory[] = rawData;
+                    if (preCategories && preCategories.length > 0)
+                        finalChecklist = [...preCategories, ...finalChecklist];
+                    if (selected.size > 0) {
+                        finalChecklist = [{
                             bolum_adi: '📚 Kütüphaneden Seçilen Risk Faktörleri',
                             bakilacak_tehlikeler: Array.from(selected),
                             tipik_tedbir_mantigi: 'Manuel olarak seçilen ISG mevzuat risk faktörleri'
-                        },
-                        ...finalChecklist
-                    ];
+                        }, ...finalChecklist];
+                    }
+                    setChecklistData(finalChecklist);
+                    const allHazards = new Set<string>();
+                    finalChecklist.forEach((cat: ChecklistCategory) => {
+                        cat.bakilacak_tehlikeler.forEach((h: string) => allHazards.add(h));
+                    });
+                    setSelectedHazards(allHazards);
+                    setStep(2);
+                    return;
                 }
-                setChecklistData(finalChecklist);
-                const allHazards = new Set<string>();
-                finalChecklist.forEach((cat: ChecklistCategory) => {
-                    cat.bakilacak_tehlikeler.forEach((h: string) => allHazards.add(h));
-                });
-                setSelectedHazards(allHazards);
-                setStep(2);
-            } else {
-                setAiError(data.error || 'Checklist oluşturulurken hata oluştu.');
+                if (job.status === 'error') { setAiError(job.error || 'Checklist oluşturulurken hata oluştu.'); return; }
             }
+            setAiError('Zaman aşımı — lütfen tekrar deneyin.');
         } catch {
             setAiError('Sunucuya bağlanılamadı.');
         } finally {
@@ -287,15 +293,26 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ context: promptText, hazards: Array.from(selectedHazards), scope })
             });
-            const data = await res.json();
-            if (res.ok) {
-                const withIds = data.map((d: any, i: number) => ({ ...d, id: `temp_${Date.now()}_${i}` }));
-                setGeneratedRisks(withIds);
-                setSelectedRows(new Set(withIds.map((r: GeneratedRisk) => r.id)));
-                setStep(3);
-            } else {
-                setAiError(data.error || 'Risk analizi oluşturulurken hata oluştu');
+            const init = await res.json();
+            if (!res.ok) { setAiError(init.error || 'Risk analizi oluşturulurken hata oluştu'); return; }
+            // Poll for job completion
+            const jobId: string = init.job_id;
+            const deadline = Date.now() + 5 * 60 * 1000;
+            while (Date.now() < deadline) {
+                await new Promise(r => setTimeout(r, 2000));
+                const poll = await apiFetch(`${API_BASE}/api/jobs/${jobId}`);
+                const job = await poll.json();
+                if (job.status === 'done') {
+                    const data = Array.isArray(job.result) ? job.result : [];
+                    const withIds = data.map((d: any, i: number) => ({ ...d, id: `temp_${Date.now()}_${i}` }));
+                    setGeneratedRisks(withIds);
+                    setSelectedRows(new Set(withIds.map((r: GeneratedRisk) => r.id)));
+                    setStep(3);
+                    return;
+                }
+                if (job.status === 'error') { setAiError(job.error || 'Risk analizi oluşturulurken hata oluştu'); return; }
             }
+            setAiError('Zaman aşımı — lütfen tekrar deneyin.');
         } catch { setAiError('Sunucuya bağlanılamadı.'); }
         finally { setGenerating(false); }
     };

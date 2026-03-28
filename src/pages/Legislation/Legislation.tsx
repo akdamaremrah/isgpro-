@@ -251,32 +251,39 @@ const Legislation: React.FC = () => {
         setClLoading(true);
         setClError(null);
 
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 90_000); // 90 sn timeout
-
         try {
+            // 1. İsteği başlat, hemen job_id al
             const res = await apiFetch(`${API_BASE}/api/generate-regulation-checklist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: reg.title, category: reg.category, content: reg.content ?? '' }),
-                signal: controller.signal,
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error ?? `Sunucu hatası (${res.status})`);
-            if (!data.sections || data.sections.length === 0)
-                throw new Error('Sunucu boş kontrol listesi döndürdü. Tekrar deneyin.');
-            // Yeniden oluşturulduğunda kaydedilmiş sonuçları temizle
-            if (force) {
-                setChecklists(prev => { const n = { ...prev }; delete n[reg.id]; return n; });
+            const init = await res.json();
+            if (!res.ok) throw new Error(init.error ?? `Sunucu hatası (${res.status})`);
+            const jobId: string = init.job_id;
+
+            // 2. Tamamlanana kadar poll et (2sn aralık, max 5dk)
+            const deadline = Date.now() + 5 * 60 * 1000;
+            while (Date.now() < deadline) {
+                await new Promise(r => setTimeout(r, 2000));
+                const poll = await apiFetch(`${API_BASE}/api/jobs/${jobId}`);
+                const job = await poll.json();
+                if (job.status === 'done') {
+                    const sections = job.result?.sections ?? job.result;
+                    if (!sections || sections.length === 0)
+                        throw new Error('Sunucu boş kontrol listesi döndürdü. Tekrar deneyin.');
+                    if (force)
+                        setChecklists(prev => { const n = { ...prev }; delete n[reg.id]; return n; });
+                    setChecklists(prev => ({ ...prev, [reg.id]: sections }));
+                    return;
+                }
+                if (job.status === 'error')
+                    throw new Error(job.error ?? 'Oluşturma başarısız');
             }
-            setChecklists(prev => ({ ...prev, [reg.id]: data.sections }));
-        } catch (e: any) {
-            if (e.name === 'AbortError')
-                setClError('İstek zaman aşımına uğradı (90 sn). Backend çalışıyor mu? Tekrar deneyin.');
-            else
-                setClError(e.message ?? 'Bilinmeyen hata');
+            throw new Error('Zaman aşımı — lütfen tekrar deneyin.');
+        } catch (e: unknown) {
+            setClError(e instanceof Error ? e.message : 'Bilinmeyen hata');
         } finally {
-            clearTimeout(timer);
             setClLoading(false);
         }
     }, [checklists]);

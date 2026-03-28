@@ -2,6 +2,8 @@ import os
 import time
 import json
 import re
+import uuid
+import threading
 import concurrent.futures
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -76,6 +78,34 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ── Public base URL (fotoğraf linkleri için) ──────────────────────────────────
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000')
+
+# ── Async Job Queue (AI generation timeout önleme) ────────────────────────────
+_jobs: dict = {}
+_jobs_lock = threading.Lock()
+
+def _job_create() -> str:
+    jid = str(uuid.uuid4())
+    with _jobs_lock:
+        _jobs[jid] = {'status': 'pending', 'result': None, 'error': None}
+    return jid
+
+def _job_done(jid: str, result):
+    with _jobs_lock:
+        if jid in _jobs:
+            _jobs[jid] = {'status': 'done', 'result': result, 'error': None}
+
+def _job_fail(jid: str, error: str):
+    with _jobs_lock:
+        if jid in _jobs:
+            _jobs[jid] = {'status': 'error', 'result': None, 'error': error}
+
+@app.route('/api/jobs/<job_id>', methods=['GET'])
+def get_job(job_id):
+    with _jobs_lock:
+        job = _jobs.get(job_id)
+    if not job:
+        return jsonify({'error': 'Job bulunamadı'}), 404
+    return jsonify(job), 200
 
 # ── JWT Auth ──────────────────────────────────────────────────────────────────
 JWT_SECRET = os.environ.get('JWT_SECRET', 'isgpro-dev-secret-2026')
@@ -2302,16 +2332,10 @@ def call_openrouter(system_instruction, prompt_text):
         print(f"OpenRouter Error: {e}")
         return None
 
-@app.route('/api/generate-regulation-checklist', methods=['POST'])
-def generate_regulation_checklist():
-    """Verilen yönetmelik için profesyonel denetim kontrol listesi üretir."""
+def generate_regulation_checklist(title: str, category: str, content: str):
+    """Verilen yönetmelik için profesyonel denetim kontrol listesi üretir. (result, error) döner."""
     if not GEMINI_API_KEY:
-        return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
-
-    data = request.get_json()
-    title    = data.get('title', '')
-    category = data.get('category', '')
-    content  = data.get('content', '')
+        return None, 'Sunucuda API Key bulunamadı.'
 
     system_instruction = """Sen Türkiye'deki İSG mevzuatı ve teknik standartlar konusunda 20+ yıl deneyimli, lisanslı A sınıfı İSG uzmanı ve baş denetçisin.
 Eğitim aldığın ve yürürlükteki tüm Türk İSG yönetmelikleri, Çalışma ve Sosyal Güvenlik Bakanlığı tebliğleri ve ilgili teknik standartlar hakkında eksiksiz bilgiye sahipsin.
@@ -2514,7 +2538,7 @@ Eklerdeki her cetvel/tablo için ayrı bölüm veya maddeler oluştur.
                         f"Regulation checklist üretildi: {title[:50]} → "
                         f"{len(valid)} bölüm (attempt {attempt+1})"
                     )
-                    return jsonify({'sections': valid})
+                    return {'sections': valid}
 
             app.logger.warning(f"[attempt {attempt+1}] Geçerli section bulunamadı, tekrar deneniyor…")
             last_error = 'Model geçerli bölüm içeriği üretemedi'
@@ -2526,20 +2550,32 @@ Eklerdeki her cetvel/tablo için ayrı bölüm veya maddeler oluştur.
                 time.sleep(2 * (attempt + 1))  # 2s, 4s backoff
 
     app.logger.error(f"Regulation checklist {MAX_RETRIES} denemede başarısız: {last_error}")
-    return jsonify({'error': f'Kontrol listesi oluşturulamadı: {last_error}'}), 500
+    return None, f'Kontrol listesi oluşturulamadı: {last_error}'
 
 
-@app.route('/api/generate-checklist', methods=['POST'])
-def generate_checklist_ai():
+# Orjinal endpoint yerine job-based wrapper
+@app.route('/api/generate-regulation-checklist', methods=['POST'])
+def generate_regulation_checklist_endpoint():
+    """Yönetmelik kontrol listesini arka planda üretir, hemen job_id döner."""
     if not GEMINI_API_KEY:
         return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
+    data = request.get_json() or {}
+    title    = data.get('title', '')
+    category = data.get('category', '')
+    content  = data.get('content', '')
+    jid = _job_create()
+    def _run():
+        with app.app_context():
+            result, err = generate_regulation_checklist(title, category, content)
+            if result:
+                _job_done(jid, result)
+            else:
+                _job_fail(jid, err or 'Bilinmeyen hata')
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({'job_id': jid}), 202
 
-    data = request.json
-    prompt_text = data.get('prompt', '')
-    scope = data.get('scope', 'general') # default: general
-    
-    if not prompt_text:
-        return jsonify({'error': 'Faaliyet/Ortam bilgisi boş olamaz.'}), 400
+
+def _generate_checklist_ai(prompt_text: str, scope: str):
 
     system_instruction = """Sen son derece profesyonel, kıdemli bir İSG (İş Sağlığı ve Güvenliği) Baş Mühendisisin. Kullanıcının girdiği tesis/işletme tipini (veya makineyi) analiz et.
 Bu tesis için İSG standartlarına uygun, bölüm bölüm (veya süreç süreç) ayrılmış kapsamlı bir "Saha Denetim ve Risk Planlama Rehberi" oluştur.
@@ -2579,13 +2615,13 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
                     text = re.sub(r',\s*}', '}', text)
                     text = re.sub(r',\s*]', ']', text)
                     try:
-                        return jsonify(json.loads(text)), 200
+                        return json.loads(text), None
                     except:
                         pass # Fallback to Gemini SDK below
 
         # 2. Fallback to Gemini SDK
         if not GEMINI_API_KEY:
-            return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
+            return None, 'Sunucuda API Key bulunamadı.'
 
         model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
         max_retries = 3
@@ -2633,26 +2669,37 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
                 app.logger.warning(f"Gemini Checklist Hata (Attempt {attempt+1}): {parse_e}")
                 time.sleep(2)
                 if attempt == max_retries - 1:
-                    return jsonify({'error': f'Gemini bağlanılamadı veya çıktı parse edilemedi: {str(parse_e)}'}), 500
+                    return None, f'Gemini bağlanılamadı veya çıktı parse edilemedi: {str(parse_e)}'
 
-        return jsonify(checklist), 200
+        return checklist, None
 
     except Exception as e:
         app.logger.error(f"Checklist Generate Error: {str(e)}")
-        return jsonify({'error': f'Yapay zeka (Checklist) üretimi sırasında hata: {str(e)}'}), 500
+        return None, f'Yapay zeka (Checklist) üretimi sırasında hata: {str(e)}'
 
-@app.route('/api/generate-risks', methods=['POST'])
-def generate_risks_ai():
+
+@app.route('/api/generate-checklist', methods=['POST'])
+def generate_checklist_endpoint():
     if not GEMINI_API_KEY:
         return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
+    data = request.json or {}
+    prompt_text = data.get('prompt', '')
+    scope = data.get('scope', 'general')
+    if not prompt_text:
+        return jsonify({'error': 'Faaliyet/Ortam bilgisi boş olamaz.'}), 400
+    jid = _job_create()
+    def _run():
+        with app.app_context():
+            result, err = _generate_checklist_ai(prompt_text, scope)
+            if result is not None:
+                _job_done(jid, result)
+            else:
+                _job_fail(jid, err or 'Bilinmeyen hata')
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({'job_id': jid}), 202
 
-    data = request.json
-    selected_hazards = data.get('hazards', [])
-    context = data.get('context', 'Genel Tesis')
-    scope = data.get('scope', 'general') # default: general
-    
-    if not selected_hazards or not isinstance(selected_hazards, list):
-        return jsonify({'error': 'Analiz edilecek tehlike listesi boş olamaz.'}), 400
+
+def _generate_risks_ai(selected_hazards: list, context: str, scope: str):
 
     system_instruction = """Sen kıdemli bir İş Güvenliği (İSG) Baş Denetçisisin. Sana verilen listedeki HER BİR madde için birbirinden bağımsız, detaylı en az 3-4 farklı risk satırı üreteceksin. Maddeleri asla özetleme veya birleştirme.
 
@@ -2813,11 +2860,34 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
             if idx < len(chunks) - 1:
                 time.sleep(0.5)  # Rate limit baskısını azalt
 
-        return jsonify(all_risks), 200
+        return all_risks, None
 
     except Exception as e:
         app.logger.error(f"Generate Error: {e}")
-        return jsonify({'error': f'Yapay zeka matris üretimi sırasında hata: {str(e)}'}), 500
+        return None, f'Yapay zeka matris üretimi sırasında hata: {str(e)}'
+
+
+@app.route('/api/generate-risks', methods=['POST'])
+def generate_risks_endpoint():
+    if not GEMINI_API_KEY:
+        return jsonify({'error': 'Sunucuda API Key bulunamadı.'}), 500
+    data = request.json or {}
+    selected_hazards = data.get('hazards', [])
+    context = data.get('context', 'Genel Tesis')
+    scope = data.get('scope', 'general')
+    if not selected_hazards or not isinstance(selected_hazards, list):
+        return jsonify({'error': 'Analiz edilecek tehlike listesi boş olamaz.'}), 400
+    jid = _job_create()
+    def _run():
+        with app.app_context():
+            result, err = _generate_risks_ai(selected_hazards, context, scope)
+            if result is not None:
+                _job_done(jid, result)
+            else:
+                _job_fail(jid, err or 'Bilinmeyen hata')
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({'job_id': jid}), 202
+
 
 @app.route('/api/dashboard/stats', methods=['GET'])
 @require_auth
