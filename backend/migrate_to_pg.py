@@ -5,7 +5,10 @@ Run: python migrate_to_pg.py
 import sqlite3
 import psycopg2
 
-PG_URL = "postgresql://postgres:CneKqSDrVNWHUGWUQHQapkORIAsHgabP@hopper.proxy.rlwy.net:36704/railway"
+import os
+PG_URL = os.environ.get("DATABASE_URL", "")
+if not PG_URL:
+    raise SystemExit("Hata: DATABASE_URL env değişkeni set edilmedi.\nÖrn: DATABASE_URL='postgresql://...' python migrate_to_pg.py")
 SQLITE_PATH = "isg.db"
 
 def get_tables(sqlite_cur):
