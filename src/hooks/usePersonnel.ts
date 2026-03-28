@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { API_BASE } from '../config/api';
+import { apiFetch } from '../api/client';
 
 export interface Personnel {
     id: number;
@@ -18,7 +19,7 @@ export const usePersonnelList = (companyId: string | undefined) => {
     return useQuery<Personnel[]>({
         queryKey: ['personnel', companyId],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/personnel`);
             if (!res.ok) throw new Error('Personel listesi yüklenemedi');
             return res.json();
         },
@@ -31,7 +32,7 @@ export const useDeletePersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (id: number) => {
-            const res = await fetch(`${API_BASE}/api/personnel/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/api/personnel/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Personel silinemedi');
             return id;
         },
@@ -62,7 +63,7 @@ export const useAddPersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (formData: Record<string, any>) => {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/personnel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -89,7 +90,7 @@ export const useUpdatePersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async ({ id, formData }: { id: number; formData: Record<string, any> }) => {
-            const res = await fetch(`${API_BASE}/api/personnel/${id}`, {
+            const res = await apiFetch(`${API_BASE}/api/personnel/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -115,7 +116,7 @@ export const useBulkDeletePersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (ids: number[]) => {
-            const res = await fetch(`${API_BASE}/api/personnel/bulk`, {
+            const res = await apiFetch(`${API_BASE}/api/personnel/bulk`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids }),
@@ -150,7 +151,7 @@ export const useBulkUploadPersonnel = (companyId: string | undefined) => {
 
     return useMutation({
         mutationFn: async (formData: FormData) => {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel/bulk-upload`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/personnel/bulk-upload`, {
                 method: 'POST',
                 body: formData,
             });

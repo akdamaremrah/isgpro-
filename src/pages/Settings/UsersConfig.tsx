@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MIcon from '../../components/MIcon';
 import styles from './UsersConfig.module.css';
 import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 
 interface UserData {
     id: number;
@@ -25,7 +26,7 @@ const UsersConfig: React.FC = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/users`);
+            const res = await apiFetch(`${API_BASE}/api/users`);
             if (res.ok) {
                 const data = await res.json();
                 setUsers(data);
@@ -44,7 +45,7 @@ const UsersConfig: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${API_BASE}/api/users`, {
+            const res = await apiFetch(`${API_BASE}/api/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -68,7 +69,7 @@ const UsersConfig: React.FC = () => {
         if (!window.confirm('Kullanıcıyı silmek istediğinize emin misiniz?')) return;
 
         try {
-            const res = await fetch(`${API_BASE}/api/users/${id}`, {
+            const res = await apiFetch(`${API_BASE}/api/users/${id}`, {
                 method: 'DELETE'
             });
 

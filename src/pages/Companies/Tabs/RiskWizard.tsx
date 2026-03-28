@@ -4,6 +4,7 @@ import styles from './RiskWizard.module.css';
 import { RISK_LIBRARY } from '../../../data/riskLibrary';
 import { GUIDED_LIBRARY, ITEM_TYPE_LABELS, ITEM_TYPE_COLORS, type ItemType } from '../../../data/guidedLibrary';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 
 interface GeneratedRisk {
     id: string;
@@ -237,7 +238,7 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
         setGenerating(true);
         setAiError('');
         try {
-            const res = await fetch(`${API_BASE}/api/generate-checklist`, {
+            const res = await apiFetch(`${API_BASE}/api/generate-checklist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt, scope })
@@ -281,7 +282,7 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
         setGenerating(true);
         setAiError('');
         try {
-            const res = await fetch(`${API_BASE}/api/generate-risks`, {
+            const res = await apiFetch(`${API_BASE}/api/generate-risks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ context: promptText, hazards: Array.from(selectedHazards), scope })
@@ -325,7 +326,7 @@ const RiskWizard: React.FC<RiskWizardProps> = ({ companyId, onComplete, onCancel
         try {
             let count = 0;
             for (const risk of risksToSave) {
-                await fetch(`${API_BASE}/api/companies/${companyId}/risks`, {
+                await apiFetch(`${API_BASE}/api/companies/${companyId}/risks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

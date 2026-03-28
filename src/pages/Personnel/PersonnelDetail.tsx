@@ -4,6 +4,7 @@ import MIcon from '../../components/MIcon';
 import styles from './PersonnelDetail.module.css';
 import mykCertificates from '../../data/mykCertificates.json';
 import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 
 const roleIcon = (type: string): string => {
     const map: Record<string, string> = {
@@ -94,7 +95,7 @@ const PersonnelDetail: React.FC = () => {
 
     const saveMykCompetencies = async (competencies: MykEntry[]) => {
         try {
-            await fetch(`${API_BASE}/api/personnel/${personnelId}`, {
+            await apiFetch(`${API_BASE}/api/personnel/${personnelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ competencies })
@@ -135,7 +136,7 @@ const PersonnelDetail: React.FC = () => {
     const fetchDetail = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/personnel/${personnelId}`);
+            const res = await apiFetch(`${API_BASE}/api/personnel/${personnelId}`);
             if (res.ok) {
                 const data = await res.json();
                 // Migrate old string[] competencies to MykEntry[]
@@ -166,7 +167,7 @@ const PersonnelDetail: React.FC = () => {
         fData.append('file', file);
 
         try {
-            const res = await fetch(`${API_BASE}/api/personnel/${personnelId}/photo`, {
+            const res = await apiFetch(`${API_BASE}/api/personnel/${personnelId}/photo`, {
                 method: 'POST',
                 body: fData
             });
@@ -187,7 +188,7 @@ const PersonnelDetail: React.FC = () => {
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/personnel/${personnelId}`, {
+            const res = await apiFetch(`${API_BASE}/api/personnel/${personnelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

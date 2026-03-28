@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import MIcon from '../MIcon';
 import { useNavigate } from 'react-router-dom';
 import styles from './Topbar.module.css';
+import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../api/client';
 import { API_BASE } from '../../config/api';
 
 interface TopbarProps {
@@ -25,6 +27,12 @@ interface Notification {
 
 const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -39,7 +47,7 @@ const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
     useEffect(() => {
         const fetchForSearch = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/companies`);
+                const res = await apiFetch(`${API_BASE}/api/companies`);
                 if (res.ok) {
                     const data = await res.json();
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +68,7 @@ const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/notifications`);
+                const res = await apiFetch(`${API_BASE}/api/notifications`);
                 if (res.ok) {
                     const data = await res.json();
                     setNotifications(data);
@@ -191,11 +199,11 @@ const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
                 <div className={styles.userMenuWrapper} ref={userMenuRef}>
                     <button className={styles.profileBtn} onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                         <div className={styles.avatar}>
-                            EA
+                            {user ? user.full_name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : '?'}
                         </div>
                         <div className={styles.userInfo}>
-                            <span className={styles.userName}>Emrah AKDAMAR</span>
-                            <span className={styles.userRole}>İş Güvenliği Uzmanı (A)</span>
+                            <span className={styles.userName}>{user ? user.full_name : ''}</span>
+                            <span className={styles.userRole}>{user ? user.role : ''}</span>
                         </div>
                         <MIcon name="expand_more" size={18} className={styles.chevron} />
                     </button>
@@ -207,7 +215,7 @@ const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
                                 <span>Ayarlar</span>
                             </button>
                             <div className={styles.userMenuDivider}></div>
-                            <button className={styles.userMenuItem} onClick={() => setIsUserMenuOpen(false)}>
+                            <button className={styles.userMenuItem} onClick={handleLogout}>
                                 <MIcon name="logout" size={18} />
                                 <span>Çıkış Yap</span>
                             </button>

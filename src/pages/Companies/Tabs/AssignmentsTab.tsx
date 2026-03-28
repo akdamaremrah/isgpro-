@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MIcon from '../../../components/MIcon';
 import styles from './AssignmentsTab.module.css';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 
 interface Personnel {
     id: number;
@@ -64,7 +65,7 @@ const AssignmentsTab: React.FC<AssignmentsTabProps> = ({ companyId }) => {
 
     const handleDateSave = async (assignmentId: number, field: string, value: string) => {
         try {
-            const res = await fetch(`${API_BASE}/api/assignments/${assignmentId}`, {
+            const res = await apiFetch(`${API_BASE}/api/assignments/${assignmentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: value || null })
@@ -118,9 +119,9 @@ const AssignmentsTab: React.FC<AssignmentsTabProps> = ({ companyId }) => {
         setLoading(true);
         try {
             const [compRes, persRes, assignRes] = await Promise.all([
-                fetch(`${API_BASE}/api/companies/${companyId}`),
-                fetch(`${API_BASE}/api/companies/${companyId}/personnel`),
-                fetch(`${API_BASE}/api/companies/${companyId}/assignments`)
+                apiFetch(`${API_BASE}/api/companies/${companyId}`),
+                apiFetch(`${API_BASE}/api/companies/${companyId}/personnel`),
+                apiFetch(`${API_BASE}/api/companies/${companyId}/assignments`)
             ]);
 
             if (compRes.ok) setCompany(await compRes.json());
@@ -190,7 +191,7 @@ const AssignmentsTab: React.FC<AssignmentsTabProps> = ({ companyId }) => {
 
         try {
             setSavingType(type);
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/assignments/bulk`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/assignments/bulk`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assignments: updatedAssignments })
@@ -217,7 +218,7 @@ const AssignmentsTab: React.FC<AssignmentsTabProps> = ({ companyId }) => {
 
         try {
             setSavingType(type);
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/assignments/bulk`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/assignments/bulk`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assignments: newPayload })

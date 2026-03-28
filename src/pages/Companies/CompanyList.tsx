@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MIcon from '../../components/MIcon';
 import styles from './CompanyList.module.css';
 import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 import { formatSGK } from '../../utils/formatters';
 import { useCompanies, useDeleteCompany, useSuspendCompany } from '../../hooks/useCompanies';
 import { toast } from 'sonner';
@@ -78,7 +79,7 @@ const CompanyList: React.FC = () => {
 
         setUploading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/companies/bulk-upload`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/bulk-upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -118,7 +119,7 @@ const CompanyList: React.FC = () => {
         if (!window.confirm(`Seçili ${selectedIds.length} firmayı silmek istediğinize emin misiniz?`)) return;
 
         try {
-            const res = await fetch(`${API_BASE}/api/companies/bulk`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/bulk`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids: selectedIds })

@@ -8,9 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()  # .env dosyasını en başta yükle
 
-from flask import Flask, jsonify, request, send_from_directory, send_file
+from flask import Flask, jsonify, request, send_from_directory, send_file, g
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from functools import wraps
+import jwt as pyjwt
 from models import (
     db, Company, CompanyProfessional, User, Personnel, GenderEnum,
     RiskAssessment, RiskStatusEnum, calculate_service_minutes, Assignment,
@@ -74,6 +77,35 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # ── Public base URL (fotoğraf linkleri için) ──────────────────────────────────
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000')
 
+# ── JWT Auth ──────────────────────────────────────────────────────────────────
+JWT_SECRET = os.environ.get('JWT_SECRET', 'isgpro-dev-secret-2026')
+JWT_EXPIRY_DAYS = 30
+
+def create_token(user_id: int) -> str:
+    from datetime import timezone, timedelta
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.now(timezone.utc) + timedelta(days=JWT_EXPIRY_DAYS)
+    }
+    return pyjwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace('Bearer ', '').strip()
+        if not token:
+            return jsonify({'error': 'Giriş gerekli'}), 401
+        try:
+            payload = pyjwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            g.user_id = payload['user_id']
+        except pyjwt.ExpiredSignatureError:
+            return jsonify({'error': 'Oturum süresi doldu, tekrar giriş yapın'}), 401
+        except pyjwt.InvalidTokenError:
+            return jsonify({'error': 'Geçersiz oturum'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 db.init_app(app)
 
 def sync_company_professionals(company_id: int):
@@ -99,20 +131,76 @@ def sync_company_professionals(company_id: int):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# --- AUTH ROUTES ---
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    if not email or not password:
+        return jsonify({'error': 'E-posta ve şifre gerekli'}), 400
+    user = User.query.filter(db.func.lower(User.email) == email).first()
+    if not user:
+        return jsonify({'error': 'E-posta veya şifre hatalı'}), 401
+    # Support both hashed and plain-text passwords (for migration)
+    if user.password.startswith('pbkdf2:') or user.password.startswith('scrypt:'):
+        valid = check_password_hash(user.password, password)
+    else:
+        valid = (user.password == password)
+    if not valid:
+        return jsonify({'error': 'E-posta veya şifre hatalı'}), 401
+    if not user.is_active:
+        return jsonify({'error': 'Hesabınız pasif durumda'}), 403
+    # Hash plain-text password on successful login
+    if not (user.password.startswith('pbkdf2:') or user.password.startswith('scrypt:')):
+        user.password = generate_password_hash(password)
+        db.session.commit()
+    token = create_token(user.id)
+    return jsonify({'token': token, 'user': user.to_dict()}), 200
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    data = request.get_json() or {}
+    email = data.get('email', '').strip().lower()
+    if not email or not data.get('password') or not data.get('full_name'):
+        return jsonify({'error': 'Ad, e-posta ve şifre gerekli'}), 400
+    if User.query.filter(db.func.lower(User.email) == email).first():
+        return jsonify({'error': 'Bu e-posta zaten kayıtlı'}), 400
+    user = User(
+        full_name=data['full_name'],
+        email=email,
+        password=generate_password_hash(data['password']),
+        role=data.get('role', 'İSG Uzmanı')
+    )
+    db.session.add(user)
+    db.session.commit()
+    token = create_token(user.id)
+    return jsonify({'token': token, 'user': user.to_dict()}), 201
+
+@app.route('/api/auth/me', methods=['GET'])
+@require_auth
+def get_me():
+    user = User.query.get(g.user_id)
+    if not user:
+        return jsonify({'error': 'Kullanıcı bulunamadı'}), 404
+    return jsonify(user.to_dict()), 200
+
 # --- USER ROUTES ---
 @app.route('/api/users', methods=['GET'])
+@require_auth
 def get_users():
     users = User.query.all()
     return jsonify([u.to_dict() for u in users]), 200
 
 @app.route('/api/users', methods=['POST'])
+@require_auth
 def create_user():
     data = request.json
     try:
         new_user = User(
             full_name=data['full_name'],
-            email=data['email'],
-            password=data['password'],
+            email=data['email'].lower(),
+            password=generate_password_hash(data['password']),
             role=data.get('role', 'İSG Uzmanı')
         )
         db.session.add(new_user)
@@ -123,6 +211,7 @@ def create_user():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/users/<int:id>', methods=['DELETE'])
+@require_auth
 def delete_user(id):
     u = User.query.get_or_404(id)
     try:
@@ -135,8 +224,9 @@ def delete_user(id):
 
 # --- ROUTES ---
 @app.route('/api/companies', methods=['GET'])
+@require_auth
 def get_companies():
-    companies = Company.query.order_by(Company.official_title.asc()).all()
+    companies = Company.query.filter_by(user_id=g.user_id).order_by(Company.official_title.asc()).all()
     result = []
     for c in companies:
         title = ' '.join((c.official_title or '').split())
@@ -166,8 +256,11 @@ def get_companies():
     return jsonify(result), 200
 
 @app.route('/api/companies/<int:id>', methods=['GET'])
+@require_auth
 def get_company(id):
     c = Company.query.get_or_404(id)
+    if c.user_id and c.user_id != g.user_id:
+        return jsonify({'error': 'Yetkisiz'}), 403
     return jsonify({
         'id': c.id,
         'short_name': c.short_name,
@@ -194,6 +287,7 @@ def get_company(id):
     }), 200
 
 @app.route('/api/companies', methods=['POST'])
+@require_auth
 def create_company():
     data = request.json
     try:
@@ -208,18 +302,19 @@ def create_company():
             city_id=data.get('city_id', 34),
             district_id=data.get('district_id', 1),
             address=data.get('address', ''),
-            
+
             employer_name=data.get('employer_name', ''),
             employer_role=data.get('employer_role', ''),
             employer_phone=data.get('employer_phone', ''),
             employer_email=data.get('employer_email', ''),
-            
+
             authorized_person=data.get('authorized_person', ''),
             authorized_role=data.get('authorized_role', ''),
             authorized_phone=data.get('authorized_phone', ''),
             authorized_email=data.get('authorized_email', ''),
-            
-            is_active=True
+
+            is_active=True,
+            user_id=g.user_id
         )
         db.session.add(new_company)
         db.session.commit()
@@ -240,6 +335,7 @@ import io
 from flask import send_file
 
 @app.route('/api/companies/download-template', methods=['GET'])
+@require_auth
 def download_template():
     import pandas as pd
     
@@ -269,6 +365,7 @@ def download_template():
     )
 
 @app.route('/api/companies/bulk-upload', methods=['POST'])
+@require_auth
 def bulk_upload():
     if 'file' not in request.files:
         return jsonify({'error': 'Dosya bulunamadı'}), 400
@@ -407,8 +504,11 @@ def bulk_upload():
         return jsonify({'error': f'Dosya okuma hatası: {str(e)}'}), 400
 
 @app.route('/api/companies/<int:id>', methods=['PUT'])
+@require_auth
 def update_company(id):
     c = Company.query.get_or_404(id)
+    if c.user_id and c.user_id != g.user_id:
+        return jsonify({'error': 'Yetkisiz'}), 403
     data = request.json
     try:
         if 'short_name' in data: c.short_name = data['short_name']
@@ -448,8 +548,11 @@ def update_company(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/companies/<int:id>/suspend', methods=['PUT'])
+@require_auth
 def suspend_company(id):
     c = Company.query.get_or_404(id)
+    if c.user_id and c.user_id != g.user_id:
+        return jsonify({'error': 'Yetkisiz'}), 403
     try:
         c.is_active = not c.is_active
         db.session.commit()
@@ -467,8 +570,11 @@ def suspend_company(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/companies/<int:id>', methods=['DELETE'])
+@require_auth
 def delete_company(id):
     c = Company.query.get_or_404(id)
+    if c.user_id and c.user_id != g.user_id:
+        return jsonify({'error': 'Yetkisiz'}), 403
     try:
         deleted_id = c.id
         db.session.delete(c)
@@ -485,6 +591,7 @@ def delete_company(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/companies/bulk', methods=['DELETE'])
+@require_auth
 def bulk_delete_companies():
     data = request.json
     ids_to_delete = data.get('ids', [])
@@ -574,6 +681,7 @@ def setup_db():
 
 # --- PROFESSIONALS ROUTES ---
 @app.route('/api/professionals/directory', methods=['GET'])
+@require_auth
 def professionals_directory():
     """Return unique professionals across all companies, deduplicated by tc_kimlik_no."""
     profs = CompanyProfessional.query.all()
@@ -596,6 +704,7 @@ def professionals_directory():
     return jsonify(list(seen.values())), 200
 
 @app.route('/api/companies/<int:company_id>/professionals', methods=['GET'])
+@require_auth
 def get_professionals(company_id):
     Company.query.get_or_404(company_id)
     profs = CompanyProfessional.query.filter_by(company_id=company_id).all()
@@ -618,6 +727,7 @@ def get_professionals(company_id):
     return jsonify(result), 200
 
 @app.route('/api/companies/<int:company_id>/professionals', methods=['POST'])
+@require_auth
 def create_professional(company_id):
     c = Company.query.get_or_404(company_id)
     data = request.json
@@ -658,6 +768,7 @@ def create_professional(company_id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/professionals/<int:prof_id>', methods=['PUT'])
+@require_auth
 def update_professional(prof_id):
     prof = CompanyProfessional.query.get_or_404(prof_id)
     data = request.json
@@ -715,6 +826,7 @@ def update_professional(prof_id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/professionals/<int:prof_id>/photo', methods=['POST'])
+@require_auth
 def update_professional_photo(prof_id):
     prof = CompanyProfessional.query.get_or_404(prof_id)
     if 'photo' not in request.files:
@@ -743,6 +855,7 @@ def update_professional_photo(prof_id):
         }), 200
 
 @app.route('/api/professionals/<int:prof_id>', methods=['DELETE'])
+@require_auth
 def delete_professional(prof_id):
     prof = CompanyProfessional.query.get_or_404(prof_id)
     try:
@@ -760,6 +873,7 @@ def delete_professional(prof_id):
 
 # --- PERSONNEL ROUTES ---
 @app.route('/api/companies/<int:company_id>/personnel', methods=['GET'])
+@require_auth
 def get_company_personnel(company_id):
     Company.query.get_or_404(company_id)
     # Alphabetical sorting
@@ -795,6 +909,7 @@ def get_company_personnel(company_id):
     return jsonify(result), 200
 
 @app.route('/api/companies/<int:company_id>/personnel', methods=['POST'])
+@require_auth
 def create_personnel(company_id):
     Company.query.get_or_404(company_id)
     data = request.json
@@ -832,6 +947,7 @@ def create_personnel(company_id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/personnel/<int:id>', methods=['PUT'])
+@require_auth
 def update_personnel(id):
     p = Personnel.query.get_or_404(id)
     data = request.json
@@ -869,6 +985,7 @@ def update_personnel(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/personnel/<int:id>', methods=['DELETE'])
+@require_auth
 def delete_personnel(id):
     p = Personnel.query.get_or_404(id)
     try:
@@ -880,6 +997,7 @@ def delete_personnel(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/personnel/bulk', methods=['DELETE'])
+@require_auth
 def bulk_delete_personnel():
     data = request.json
     ids_to_delete = data.get('ids', [])
@@ -903,6 +1021,7 @@ def bulk_delete_personnel():
 
 # --- TRAINING DATE ROUTES ---
 @app.route('/api/companies/<int:company_id>/personnel/training-dates', methods=['PUT'])
+@require_auth
 def bulk_update_training_dates(company_id):
     """Seçilen personellerin eğitim tarihlerini toplu günceller."""
     Company.query.get_or_404(company_id)
@@ -934,6 +1053,7 @@ def bulk_update_training_dates(company_id):
     return jsonify({'message': f'{updated} personelin eğitim tarihleri güncellendi', 'updated': updated}), 200
 
 @app.route('/api/companies/<int:company_id>/personnel/health-dates', methods=['PUT'])
+@require_auth
 def bulk_update_health_dates(company_id):
     """Seçilen personellerin sağlık muayene tarihini toplu günceller."""
     Company.query.get_or_404(company_id)
@@ -962,6 +1082,7 @@ def bulk_update_health_dates(company_id):
 
 # --- ASSIGNMENT ROUTES ---
 @app.route('/api/companies/<int:company_id>/assignments', methods=['GET'])
+@require_auth
 def get_assignments(company_id):
     assignments = Assignment.query.filter_by(company_id=company_id).all()
     result = []
@@ -988,6 +1109,7 @@ def get_assignments(company_id):
     return jsonify(result), 200
 
 @app.route('/api/assignments/<int:assignment_id>', methods=['PUT'])
+@require_auth
 def update_assignment(assignment_id):
     a = Assignment.query.get_or_404(assignment_id)
     data = request.json
@@ -1087,6 +1209,7 @@ def sync_risk_assessment_team(company_id):
         app.logger.error(f"Sync error for company {company_id}: {e}")
 
 @app.route('/api/companies/<int:company_id>/assignments/bulk', methods=['POST'])
+@require_auth
 def bulk_save_assignments(company_id):
     data = request.json
     new_assignments_list = data.get('assignments', [])
@@ -1117,6 +1240,7 @@ def bulk_save_assignments(company_id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/personnel/<int:id>', methods=['GET'])
+@require_auth
 def get_personnel_detail(id):
     p = Personnel.query.get_or_404(id)
     # Get assignments for this personnel
@@ -1152,6 +1276,7 @@ def get_personnel_detail(id):
     }), 200
 
 @app.route('/api/personnel/<int:id>/photo', methods=['POST'])
+@require_auth
 def upload_personnel_photo(id):
     p = Personnel.query.get_or_404(id)
     if 'file' not in request.files:
@@ -1172,6 +1297,7 @@ def upload_personnel_photo(id):
         }), 200
 
 @app.route('/api/personnel/download-template', methods=['GET'])
+@require_auth
 def download_personnel_template():
     columns = [
         "Ad Soyad", "TC Kimlik No", "Unvan", "Doğum Tarihi (YYYY-AA-GG)", 
@@ -1191,6 +1317,7 @@ def download_personnel_template():
                      as_attachment=True, download_name="personel_yukleme_sablonu.xlsx")
 
 @app.route('/api/companies/<int:company_id>/personnel/bulk-upload', methods=['POST'])
+@require_auth
 def bulk_upload_personnel(company_id):
     Company.query.get_or_404(company_id)
     if 'file' not in request.files:
@@ -1331,6 +1458,7 @@ def bulk_upload_personnel(company_id):
 
 # --- RISK ASSESSMENT ROUTES ---
 @app.route('/api/companies/<int:company_id>/risks', methods=['GET'])
+@require_auth
 def get_company_risks(company_id):
     Company.query.get_or_404(company_id)
     min_score = request.args.get('min_score', type=float)
@@ -1366,6 +1494,7 @@ def get_company_risks(company_id):
     return jsonify(result), 200
 
 @app.route('/api/companies/<int:company_id>/risks', methods=['POST'])
+@require_auth
 def create_risk(company_id):
     Company.query.get_or_404(company_id)
     data = request.json
@@ -1395,6 +1524,7 @@ def create_risk(company_id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/risks/<int:id>', methods=['PUT'])
+@require_auth
 def update_risk(id):
     r = RiskAssessment.query.get_or_404(id)
     data = request.json
@@ -1420,6 +1550,7 @@ def update_risk(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/risks/<int:id>', methods=['DELETE'])
+@require_auth
 def delete_risk(id):
     r = RiskAssessment.query.get_or_404(id)
     try:
@@ -1431,6 +1562,7 @@ def delete_risk(id):
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/companies/<int:company_id>/risks/export', methods=['GET'])
+@require_auth
 def export_risks_excel(company_id):
     company = Company.query.get_or_404(company_id)
     risks = RiskAssessment.query.filter_by(company_id=company_id).order_by(RiskAssessment.id).all()
@@ -1643,6 +1775,7 @@ def export_risks_excel(company_id):
 # --- WORD EXPORT ---
 
 @app.route('/api/companies/<int:company_id>/export/docx', methods=['GET'])
+@require_auth
 def export_company_docx(company_id):
     """Firma için kapsamlı Word belgesi oluştur."""
     from docx import Document as DocxDocument
@@ -2053,6 +2186,7 @@ def decrease_value(val):
     return 6
 
 @app.route('/api/companies/<int:company_id>/risks/generate', methods=['POST'])
+@require_auth
 def generate_risks_from_wizard(company_id):
     Company.query.get_or_404(company_id)
     data = request.json
@@ -2660,42 +2794,52 @@ DİKKAT KATI KURAL: Kullanıcı senden sadece çok spesifik bir konuyu (veya mak
         return jsonify({'error': f'Yapay zeka matris üretimi sırasında hata: {str(e)}'}), 500
 
 @app.route('/api/dashboard/stats', methods=['GET'])
+@require_auth
 def get_dashboard_stats():
     """
-    Returns global statistics for the premium dashboard.
+    Returns statistics filtered by the authenticated user's companies.
     """
-    total_companies = Company.query.count()
-    total_personnel = Personnel.query.count()
-    
+    user_company_ids = [c.id for c in Company.query.filter_by(user_id=g.user_id).with_entities(Company.id).all()]
+
+    total_companies = len(user_company_ids)
+    total_personnel = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)).count() if user_company_ids else 0
+
     # 1. Company Danger Class Distribution
     danger_dist = db.session.query(
         DangerClass.name, func.count(Company.id)
-    ).join(NaceCode).join(Company).group_by(DangerClass.name).all()
-    
-    # 2. Personnel Training Status (Global)
+    ).join(NaceCode).join(Company).filter(Company.id.in_(user_company_ids)).group_by(DangerClass.name).all() if user_company_ids else []
+
+    # 2. Personnel Training Status
     now = datetime.now().date()
-    trained = Personnel.query.filter(Personnel.training_validity_date > now).count()
-    expired = Personnel.query.filter(Personnel.training_validity_date <= now).count()
-    never_trained = Personnel.query.filter(Personnel.training_validity_date == None).count()
-    
-    # 3. Health Exam Status (Global)
-    healthy = Personnel.query.filter(Personnel.health_validity_date > now).count()
-    overdue_health = Personnel.query.filter(Personnel.health_validity_date <= now).count()
-    never_exam = Personnel.query.filter(Personnel.health_validity_date == None).count()
-    
-    # 4. Risk Level Distribution (Global)
+    personnel_q = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)) if user_company_ids else Personnel.query.filter(Personnel.id == -1)
+    trained = personnel_q.filter(Personnel.training_validity_date > now).count()
+    expired = personnel_q.filter(Personnel.training_validity_date <= now).count()
+    never_trained = personnel_q.filter(Personnel.training_validity_date == None).count()
+
+    # 3. Health Exam Status
+    healthy = personnel_q.filter(Personnel.health_validity_date > now).count()
+    overdue_health = personnel_q.filter(Personnel.health_validity_date <= now).count()
+    never_exam = personnel_q.filter(Personnel.health_validity_date == None).count()
+
+    # 4. Risk Level Distribution
     risk_dist = db.session.query(
         RiskAssessment.initial_risk_level, func.count(RiskAssessment.id)
-    ).group_by(RiskAssessment.initial_risk_level).all()
-    
+    ).filter(RiskAssessment.company_id.in_(user_company_ids)).group_by(RiskAssessment.initial_risk_level).all() if user_company_ids else []
+
     # 5. Recent Companies
-    recent_companies = Company.query.order_by(Company.created_at.desc()).limit(5).all()
-    
+    recent_companies = Company.query.filter_by(user_id=g.user_id).order_by(Company.created_at.desc()).limit(5).all()
+
+    # 6. Active professionals for user's companies
+    active_professionals = CompanyProfessional.query.filter(
+        CompanyProfessional.company_id.in_(user_company_ids),
+        CompanyProfessional.is_active == True
+    ).count() if user_company_ids else 0
+
     return jsonify({
         'overview': {
             'totalCompanies': total_companies,
             'totalPersonnel': total_personnel,
-            'activeProfessionals': CompanyProfessional.query.filter_by(is_active=True).count()
+            'activeProfessionals': active_professionals
         },
         'dangerDistribution': [{'name': name, 'value': count} for name, count in danger_dist],
         'trainingStats': [
@@ -2725,6 +2869,7 @@ def allowed_training_doc(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_TRAINING_DOC_EXTENSIONS
 
 @app.route('/api/companies/<int:company_id>/training-documents', methods=['GET'])
+@require_auth
 def get_training_documents(company_id):
     company = Company.query.get_or_404(company_id)
     docs = TrainingDocument.query.filter_by(company_id=company_id).order_by(TrainingDocument.uploaded_at.desc()).all()
@@ -2765,6 +2910,7 @@ def _migrate_training_docs_to_year_folders():
     db.session.commit()
 
 @app.route('/api/companies/<int:company_id>/training-documents', methods=['POST'])
+@require_auth
 def upload_training_document(company_id):
     company = Company.query.get_or_404(company_id)
 
@@ -2816,6 +2962,7 @@ def upload_training_document(company_id):
     }), 201
 
 @app.route('/api/training-documents/<int:doc_id>/download')
+@require_auth
 def download_training_document(doc_id):
     doc = TrainingDocument.query.get_or_404(doc_id)
     upload_dir = app.config['TRAINING_DOCS_FOLDER']
@@ -2834,6 +2981,7 @@ def view_training_document(doc_id):
     return send_file(filepath, download_name=doc.original_filename, as_attachment=False)
 
 @app.route('/api/training-documents/<int:doc_id>', methods=['DELETE'])
+@require_auth
 def delete_training_document(doc_id):
     doc = TrainingDocument.query.get_or_404(doc_id)
     upload_dir = app.config['TRAINING_DOCS_FOLDER']
@@ -2853,6 +3001,7 @@ def allowed_health_doc(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_HEALTH_DOC_EXTENSIONS
 
 @app.route('/api/companies/<int:company_id>/health-documents', methods=['GET'])
+@require_auth
 def get_health_documents(company_id):
     Company.query.get_or_404(company_id)
     docs = HealthDocument.query.filter_by(company_id=company_id).order_by(HealthDocument.uploaded_at.desc()).all()
@@ -2866,6 +3015,7 @@ def get_health_documents(company_id):
     } for d in docs]), 200
 
 @app.route('/api/companies/<int:company_id>/health-documents', methods=['POST'])
+@require_auth
 def upload_health_document(company_id):
     Company.query.get_or_404(company_id)
 
@@ -2916,6 +3066,7 @@ def upload_health_document(company_id):
     }), 201
 
 @app.route('/api/health-documents/<int:doc_id>/download')
+@require_auth
 def download_health_document(doc_id):
     doc = HealthDocument.query.get_or_404(doc_id)
     upload_dir = app.config['HEALTH_DOCS_FOLDER']
@@ -2934,6 +3085,7 @@ def view_health_document(doc_id):
     return send_file(filepath, download_name=doc.original_filename, as_attachment=False)
 
 @app.route('/api/health-documents/<int:doc_id>', methods=['DELETE'])
+@require_auth
 def delete_health_document(doc_id):
     doc = HealthDocument.query.get_or_404(doc_id)
     upload_dir = app.config['HEALTH_DOCS_FOLDER']
@@ -2948,6 +3100,7 @@ def delete_health_document(doc_id):
 # BİLDİRİMLER (Notifications)
 # ==========================================
 @app.route('/api/notifications', methods=['GET'])
+@require_auth
 def get_notifications():
     from datetime import date, timedelta
     today = date.today()

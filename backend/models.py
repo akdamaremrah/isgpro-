@@ -184,6 +184,7 @@ class Company(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     has_isg_kurulu = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     # Relationships (Cascade delete for related data when a company is deleted)
     professionals = db.relationship('CompanyProfessional', back_populates='company', lazy=True, cascade="all, delete-orphan")

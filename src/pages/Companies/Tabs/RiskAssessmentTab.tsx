@@ -3,6 +3,7 @@ import MIcon from '../../../components/MIcon';
 import styles from './RiskAssessmentTab.module.css';
 import RiskWizard from './RiskWizard';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 
 interface RiskItem {
     id: number;
@@ -120,7 +121,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
 
     const fetchCompanyInfo = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}`);
             if (res.ok) setCompanyInfo(await res.json());
         } catch { /* ignore */ }
     };
@@ -128,7 +129,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
     const fetchRisks = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/risks`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/risks`);
             if (res.ok) {
                 setRisks(await res.json());
                 setSelectedRisks(new Set());
@@ -147,7 +148,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
 
     const handleAddEmptyRow = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/risks`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/risks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(emptyForm)
@@ -159,7 +160,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
     const handleDelete = async (id: number) => {
         if (!window.confirm('Bu risk kaydını silmek istediğinize emin misiniz?')) return;
         try {
-            const res = await fetch(`${API_BASE}/api/risks/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/api/risks/${id}`, { method: 'DELETE' });
             if (res.ok) fetchRisks();
         } catch { alert('Silme hatası.'); }
     };
@@ -170,7 +171,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
         try {
             setLoading(true);
             for (const id of selectedRisks) {
-                await fetch(`${API_BASE}/api/risks/${id}`, { method: 'DELETE' });
+                await apiFetch(`${API_BASE}/api/risks/${id}`, { method: 'DELETE' });
             }
             setSelectedRisks(new Set());
             fetchRisks();
@@ -238,7 +239,7 @@ const RiskAssessmentTab: React.FC<RiskTabProps> = ({ companyId }) => {
         const item = risks.find(r => r.id === id);
         if (!item) return;
         try {
-            await fetch(`${API_BASE}/api/risks/${id}`, {
+            await apiFetch(`${API_BASE}/api/risks/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(item)

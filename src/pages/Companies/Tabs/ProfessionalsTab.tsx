@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import MIcon from '../../../components/MIcon';
 import styles from './ProfessionalsTab.module.css';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 
 interface Professional {
     id: number;
@@ -85,14 +86,14 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
 
     const fetchDirectory = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/professionals/directory`);
+            const res = await apiFetch(`${API_BASE}/api/professionals/directory`);
             if (res.ok) setDirectory(await res.json());
         } catch (_) { }
     };
 
     const fetchProfessionals = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/professionals`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/professionals`);
             if (res.ok) {
                 const data = await res.json();
                 setProfessionals(data);
@@ -116,7 +117,7 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
         }
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/professionals`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/professionals`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
@@ -139,7 +140,7 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
     const handleSaveInline = async (field: string) => {
         if (!selectedProf) return;
         try {
-            const res = await fetch(`${API_BASE}/api/professionals/${selectedProf.id}`, {
+            const res = await apiFetch(`${API_BASE}/api/professionals/${selectedProf.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: editValue }),
@@ -160,7 +161,7 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
         e.stopPropagation();
         if (!window.confirm('Bu profesyoneli kalıcı olarak silmek istiyor musunuz?')) return;
         try {
-            const res = await fetch(`${API_BASE}/api/professionals/${profId}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/api/professionals/${profId}`, { method: 'DELETE' });
             if (res.ok) {
                 await fetchProfessionals();
                 if (selectedProf && selectedProf.id === profId) {
@@ -178,7 +179,7 @@ const ProfessionalsTab: React.FC<Props> = ({ companyId }) => {
         formData.append('photo', file);
 
         try {
-            const res = await fetch(`${API_BASE}/api/professionals/${selectedProf.id}/photo`, {
+            const res = await apiFetch(`${API_BASE}/api/professionals/${selectedProf.id}/photo`, {
                 method: 'POST',
                 body: formData
             });

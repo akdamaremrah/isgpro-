@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import MIcon from '../../../components/MIcon';
 import { motion } from 'framer-motion';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 import styles from './TrainingHealthTab.module.css';
@@ -101,7 +102,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({ companyId }) => {
     // Fetch documents
     const fetchDocuments = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/training-documents`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/training-documents`);
             if (res.ok) {
                 const data = await res.json();
                 setDocuments(data);
@@ -123,7 +124,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({ companyId }) => {
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('docType', docTypeKey);
-                const res = await fetch(`${API_BASE}/api/companies/${companyId}/training-documents`, {
+                const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/training-documents`, {
                     method: 'POST',
                     body: formData,
                 });
@@ -157,7 +158,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({ companyId }) => {
 
     const handleDeleteDoc = async (docId: number) => {
         try {
-            const res = await fetch(`${API_BASE}/api/training-documents/${docId}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/api/training-documents/${docId}`, { method: 'DELETE' });
             if (res.ok) {
                 toast.success('Belge silindi');
                 setDocuments(prev => prev.filter(d => d.id !== docId));
@@ -226,7 +227,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({ companyId }) => {
         }
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel/training-dates`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/personnel/training-dates`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

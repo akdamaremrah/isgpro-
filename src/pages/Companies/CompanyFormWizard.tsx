@@ -5,6 +5,7 @@ import { IMaskInput } from 'react-imask';
 import styles from './CompanyFormWizard.module.css';
 import { queryClient } from '../../api/queryClient';
 import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 
 import turkeyLocations from '../../data/turkeyLocations.json';
 import naceCodes from '../../data/naceCodes.json';
@@ -72,7 +73,7 @@ const CompanyFormWizard: React.FC = () => {
         if (isEditMode && id) {
             const fetchCompany = async () => {
                 try {
-                    const res = await fetch(`${API_BASE}/api/companies/${id}`);
+                    const res = await apiFetch(`${API_BASE}/api/companies/${id}`);
                     if (res.ok) {
                         const data = await res.json();
                         setFormData({
@@ -117,7 +118,7 @@ const CompanyFormWizard: React.FC = () => {
             const url = isEditMode ? `${API_BASE}/api/companies/${id}` : `${API_BASE}/api/companies`;
             const method = isEditMode ? 'PUT' : 'POST';
 
-            const res = await fetch(url, {
+            const res = await apiFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import MIcon from '../../components/MIcon';
 import styles from './CompanyDetailLayout.module.css';
 import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 import ProfessionalsTab from './Tabs/ProfessionalsTab';
 import EmployeesTab from './Tabs/EmployeesTab';
 import AssignmentsTab from './Tabs/AssignmentsTab';
@@ -47,7 +48,7 @@ const CompanyDetailLayout: React.FC = () => {
     const fetchCompany = async () => {
         if (!id) return;
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${id}`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${id}`);
             if (res.ok) {
                 const data = await res.json();
                 setCompany(data);
@@ -60,7 +61,7 @@ const CompanyDetailLayout: React.FC = () => {
     const fetchAssignments = async () => {
         if (!id) return;
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${id}/assignments`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${id}/assignments`);
             if (res.ok) {
                 const data = await res.json();
                 setHasKurulUyesi(data.some((a: any) => a.assignment_type === 'ISG_Kurul_Uyesi'));

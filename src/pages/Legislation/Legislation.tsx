@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { legislationData } from '../../data/legislationData';
 import type { Regulation } from '../../data/legislationData';
 import styles from './Legislation.module.css';
+import { API_BASE } from '../../config/api';
+import { apiFetch } from '../../api/client';
 
 // ── Geçerli Material Icons listesi (section header ikonları için) ──────────────
 const VALID_ICONS = new Set([
@@ -253,7 +255,7 @@ const Legislation: React.FC = () => {
         const timer = setTimeout(() => controller.abort(), 90_000); // 90 sn timeout
 
         try {
-            const res = await fetch('http://localhost:5000/api/generate-regulation-checklist', {
+            const res = await apiFetch(`${API_BASE}/api/generate-regulation-checklist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: reg.title, category: reg.category, content: reg.content ?? '' }),
@@ -325,7 +327,7 @@ const Legislation: React.FC = () => {
         setCompSearch('');
         setCompLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/companies');
+            const res = await apiFetch(`${API_BASE}/api/companies`);
             const data = await res.json();
             setCompanies(Array.isArray(data) ? data : []);
         } catch {

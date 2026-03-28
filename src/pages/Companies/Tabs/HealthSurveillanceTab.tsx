@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import MIcon from '../../../components/MIcon';
 import { motion } from 'framer-motion';
 import { API_BASE } from '../../../config/api';
+import { apiFetch } from '../../../api/client';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 import styles from './HealthSurveillanceTab.module.css';
@@ -110,7 +111,7 @@ const HealthSurveillanceTab: React.FC<HealthTabProps> = ({ companyId }) => {
 
     const fetchHealthDocs = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/health-documents`);
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/health-documents`);
             if (res.ok) setHealthDocs(await res.json());
         } catch { /* ignore */ }
     };
@@ -126,7 +127,7 @@ const HealthSurveillanceTab: React.FC<HealthTabProps> = ({ companyId }) => {
                 const fd = new FormData();
                 fd.append('file', file);
                 fd.append('docType', docTypeKey);
-                const res = await fetch(`${API_BASE}/api/companies/${companyId}/health-documents`, { method: 'POST', body: fd });
+                const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/health-documents`, { method: 'POST', body: fd });
                 res.ok ? ok++ : fail++;
             } catch { fail++; }
         }
@@ -137,7 +138,7 @@ const HealthSurveillanceTab: React.FC<HealthTabProps> = ({ companyId }) => {
 
     const handleDeleteHealthDoc = async (docId: number) => {
         try {
-            const res = await fetch(`${API_BASE}/api/health-documents/${docId}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/api/health-documents/${docId}`, { method: 'DELETE' });
             if (res.ok) { toast.success('Belge silindi'); setHealthDocs(prev => prev.filter(d => d.id !== docId)); }
             else toast.error('Silme başarısız');
         } catch { toast.error('Sunucu hatası'); }
@@ -208,7 +209,7 @@ const HealthSurveillanceTab: React.FC<HealthTabProps> = ({ companyId }) => {
         }
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/api/companies/${companyId}/personnel/health-dates`, {
+            const res = await apiFetch(`${API_BASE}/api/companies/${companyId}/personnel/health-dates`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ personnelIds: selectedIds, healthExamDate }),
