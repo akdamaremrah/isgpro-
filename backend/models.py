@@ -162,7 +162,7 @@ class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     short_name = db.Column(db.String(100), nullable=False)
     official_title = db.Column(db.String(255), nullable=False)
-    sgk_no = db.Column(db.String(26), unique=True, nullable=False)
+    sgk_no = db.Column(db.String(50), unique=True, nullable=False)
     nace_code_id = db.Column(db.Integer, db.ForeignKey('nace_codes.id'), nullable=False)
     employee_count = db.Column(db.Integer, default=0)
     
