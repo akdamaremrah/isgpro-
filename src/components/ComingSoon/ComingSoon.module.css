@@ -1,0 +1,253 @@
+.wrapper {
+    position: relative;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2rem 1rem;
+}
+
+/* ── Animated background orbs ─────────────────────────────────── */
+.orb1, .orb2, .orb3 {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: orbFloat 8s ease-in-out infinite;
+}
+.orb1 { width: 600px; height: 600px; top: -150px; right: -100px; animation-delay: 0s; }
+.orb2 { width: 500px; height: 500px; bottom: -120px; left: -80px; animation-delay: -3s; animation-duration: 10s; }
+.orb3 { width: 350px; height: 350px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -5s; animation-duration: 12s; }
+
+@keyframes orbFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+}
+.orb3 {
+    animation-name: orbFloat3;
+}
+@keyframes orbFloat3 {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -55%) scale(1.08); }
+}
+
+/* ── Grid lines ───────────────────────────────────────────────── */
+.grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 75%);
+}
+
+/* ── Particles ────────────────────────────────────────────────── */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particleRise linear infinite;
+    bottom: 10%;
+}
+@keyframes particleRise {
+    0%   { transform: translateY(0) scale(0);   opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.2; }
+    100% { transform: translateY(-60vh) scale(0.3); opacity: 0; }
+}
+
+/* ── Card ─────────────────────────────────────────────────────── */
+.card {
+    position: relative;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(99,102,241,0.12);
+    border-radius: 28px;
+    padding: 3rem 3.5rem;
+    max-width: 580px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0;
+    box-shadow:
+        0 4px 6px -1px rgba(0,0,0,0.04),
+        0 20px 60px -10px rgba(99,102,241,0.12),
+        0 0 0 1px rgba(255,255,255,0.8) inset;
+}
+
+/* ── Badge ────────────────────────────────────────────────────── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    margin-bottom: 1.75rem;
+    background: rgba(255,255,255,0.7);
+}
+.badgeDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ── Icon ─────────────────────────────────────────────────────── */
+.iconWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+.iconGlow {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    animation: glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+}
+.iconRing {
+    position: absolute;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    animation: ringExpand 3s ease-in-out infinite;
+}
+.iconRing2 {
+    position: absolute;
+    width: 136px;
+    height: 136px;
+    border-radius: 50%;
+    border: 1px solid;
+    animation: ringExpand 3s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+@keyframes ringExpand {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.06); opacity: 0.3; }
+}
+.iconBox {
+    position: relative;
+    z-index: 2;
+    width: 90px;
+    height: 90px;
+    border-radius: 24px;
+    border: 1.5px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(99,102,241,0.1);
+}
+
+/* ── Title area ───────────────────────────────────────────────── */
+.titleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.comingSoonLabel {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+    margin-bottom: 0.25rem;
+}
+@keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+.title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+}
+.subtitle {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #64748b;
+    margin: 0;
+}
+
+/* ── Divider ──────────────────────────────────────────────────── */
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Description ──────────────────────────────────────────────── */
+.description {
+    font-size: 0.925rem;
+    color: #475569;
+    line-height: 1.75;
+    margin: 0 0 1.75rem;
+    max-width: 440px;
+}
+
+/* ── Features ─────────────────────────────────────────────────── */
+.features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 400px;
+}
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+    background: rgba(248,250,252,0.8);
+    border: 1px solid rgba(99,102,241,0.07);
+    border-radius: 10px;
+    padding: 0.625rem 0.875rem;
+    text-align: left;
+}
+.featureIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .card { padding: 2rem 1.5rem; border-radius: 20px; }
+    .title { font-size: 1.4rem; }
+    .iconBox { width: 72px; height: 72px; }
+    .orb1, .orb2, .orb3 { display: none; }
+}

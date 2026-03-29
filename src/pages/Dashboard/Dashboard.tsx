@@ -1,26 +1,22 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import MIcon from '../../components/MIcon';
-import styles from './Dashboard.module.css';
+import ComingSoon from '../../components/ComingSoon/ComingSoon';
 
-const Dashboard: React.FC = () => {
-    return (
-        <div className={styles.loadingContainer}>
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className={styles.comingSoonBox}
-            >
-                <MIcon name="trending_up" className={styles.loaderIcon} size={64} />
-                <h1 className={styles.comingSoonTitle}>YAKINDA</h1>
-                <p className={styles.comingSoonText}>
-                    İSG Pro+ Dashboard modülü çok yakında yayına girecektir.
-                </p>
-                <div className={styles.comingSoonBadge}>PREMIUM</div>
-            </motion.div>
-        </div>
-    );
-};
+const Dashboard: React.FC = () => (
+    <ComingSoon
+        icon="dashboard"
+        title="Genel Bakış Paneli"
+        subtitle="Ana Sayfa · Canlı Veriler"
+        description="Tüm firmaların İSG durumunu tek ekranda takip edin. Sona eren belgeler, yaklaşan muayeneler, risk seviyeleri ve aylık performans verilerini gerçek zamanlı olarak izleyin."
+        features={[
+            { icon: 'bar_chart', text: 'Firma bazlı İSG uyum skoru ve trend grafikleri' },
+            { icon: 'notifications_active', text: 'Sona eren belge ve eğitim uyarıları' },
+            { icon: 'health_and_safety', text: 'Personel sağlık muayenesi takip panosu' },
+            { icon: 'assignment_late', text: 'Açık aksiyon ve görev yönetimi' },
+            { icon: 'calendar_month', text: 'Aylık hizmet planı ve zaman çizelgesi' },
+        ]}
+        accentColor="#6366f1"
+        gradientFrom="#6366f1"
+        gradientTo="#8b5cf6"
+    />
+);
 
 export default Dashboard;

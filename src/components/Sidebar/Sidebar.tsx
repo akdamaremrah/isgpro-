@@ -16,7 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, onNavClick }) 
         { title: 'Raporlar & İstatistikler', icon: <MIcon name="analytics" size={20} />, path: '/reports' },
         { title: 'Doküman Arşivi', icon: <MIcon name="inventory_2" size={20} />, path: '/documents' },
         { title: 'Mevzuat Kütüphanesi', icon: <MIcon name="auto_stories" size={20} />, path: '/legislation' },
-        { title: 'Kullanıcı İşlemleri', icon: <MIcon name="group" size={20} />, path: '/users' },
+        { title: 'Kullanıcı İşlemleri', icon: <MIcon name="group" size={20} />, path: '/settings' },
     ];
 
     return (

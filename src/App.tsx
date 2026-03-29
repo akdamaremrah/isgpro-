@@ -7,6 +7,8 @@ import CompanyDetailLayout from './pages/Companies/CompanyDetailLayout';
 import PersonnelDetail from './pages/Personnel/PersonnelDetail';
 import UsersConfig from './pages/Settings/UsersConfig';
 import Dashboard from './pages/Dashboard/Dashboard';
+import Reports from './pages/Reports/Reports';
+import Documents from './pages/Documents/Documents';
 import Legislation from './pages/Legislation/Legislation';
 import LoginPage from './pages/Login/LoginPage';
 
@@ -31,6 +33,8 @@ function AppRoutes() {
           <Route path=":id/edit" element={<CompanyFormWizard />} />
           <Route path=":companyId/personnel/:personnelId" element={<PersonnelDetail />} />
         </Route>
+        <Route path="reports" element={<Reports />} />
+        <Route path="documents" element={<Documents />} />
         <Route path="legislation" element={<Legislation />} />
         <Route path="settings" element={<UsersConfig />} />
         <Route path="*" element={<div>Sayfa Bulunamadı!</div>} />
