@@ -2898,68 +2898,158 @@ def generate_risks_endpoint():
 @app.route('/api/dashboard/stats', methods=['GET'])
 @require_auth
 def get_dashboard_stats():
-    """
-    Returns statistics filtered by the authenticated user's companies.
-    """
-    user_company_ids = [c.id for c in Company.query.filter_by(user_id=g.user_id).with_entities(Company.id).all()]
-
-    total_companies = len(user_company_ids)
-    total_personnel = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)).count() if user_company_ids else 0
-
-    # 1. Company Danger Class Distribution
-    danger_dist = db.session.query(
-        DangerClass.name, func.count(Company.id)
-    ).join(NaceCode).join(Company).filter(Company.id.in_(user_company_ids)).group_by(DangerClass.name).all() if user_company_ids else []
-
-    # 2. Personnel Training Status
+    from datetime import timedelta
     now = datetime.now().date()
-    personnel_q = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)) if user_company_ids else Personnel.query.filter(Personnel.id == -1)
-    trained = personnel_q.filter(Personnel.training_validity_date > now).count()
-    expired = personnel_q.filter(Personnel.training_validity_date <= now).count()
-    never_trained = personnel_q.filter(Personnel.training_validity_date == None).count()
+    soon_30 = now + timedelta(days=30)
+    soon_60 = now + timedelta(days=60)
 
-    # 3. Health Exam Status
-    healthy = personnel_q.filter(Personnel.health_validity_date > now).count()
-    overdue_health = personnel_q.filter(Personnel.health_validity_date <= now).count()
-    never_exam = personnel_q.filter(Personnel.health_validity_date == None).count()
+    companies = Company.query.filter_by(user_id=g.user_id).all()
+    user_company_ids = [c.id for c in companies]
 
-    # 4. Risk Level Distribution
-    risk_dist = db.session.query(
-        RiskAssessment.initial_risk_level, func.count(RiskAssessment.id)
-    ).filter(RiskAssessment.company_id.in_(user_company_ids)).group_by(RiskAssessment.initial_risk_level).all() if user_company_ids else []
-
-    # 5. Recent Companies
-    recent_companies = Company.query.filter_by(user_id=g.user_id).order_by(Company.created_at.desc()).limit(5).all()
-
-    # 6. Active professionals for user's companies
+    # ── Overview counts ────────────────────────────────────────────
+    total_personnel = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)).count() if user_company_ids else 0
     active_professionals = CompanyProfessional.query.filter(
-        CompanyProfessional.company_id.in_(user_company_ids),
-        CompanyProfessional.is_active == True
+        CompanyProfessional.company_id.in_(user_company_ids), CompanyProfessional.is_active == True
     ).count() if user_company_ids else 0
+
+    # ── Per-company compliance scores ─────────────────────────────
+    company_scores = []
+    total_compliance = 0
+    for c in companies:
+        p_total = Personnel.query.filter_by(company_id=c.id).count()
+        p_trained = Personnel.query.filter_by(company_id=c.id).filter(Personnel.training_validity_date > now).count()
+        p_healthy = Personnel.query.filter_by(company_id=c.id).filter(Personnel.health_validity_date > now).count()
+        has_prof = CompanyProfessional.query.filter_by(company_id=c.id, is_active=True).count() > 0
+        has_risk = RiskAssessment.query.filter_by(company_id=c.id).count() > 0
+
+        training_pct = round(p_trained / p_total * 100) if p_total > 0 else 0
+        health_pct   = round(p_healthy / p_total * 100) if p_total > 0 else 0
+        prof_pct     = 100 if has_prof else 0
+        risk_pct     = 100 if has_risk else 0
+        compliance   = round(training_pct * 0.30 + health_pct * 0.30 + prof_pct * 0.20 + risk_pct * 0.20)
+        total_compliance += compliance
+
+        company_scores.append({
+            'id': c.id,
+            'name': (c.short_name or c.official_title or '')[:35],
+            'compliance': compliance,
+            'trainingPct': training_pct,
+            'healthPct': health_pct,
+            'profPct': prof_pct,
+            'riskPct': risk_pct,
+            'totalPersonnel': p_total,
+            'dangerClass': c.nace_code.danger_class.name if c.nace_code and c.nace_code.danger_class else 'Tehlikeli',
+            'isActive': c.is_active,
+        })
+    company_scores.sort(key=lambda x: x['compliance'])
+    avg_compliance = round(total_compliance / len(companies)) if companies else 0
+
+    # ── Expiring training alerts ───────────────────────────────────
+    def p_to_dict(p, kind, days_left):
+        c_name = ''
+        for comp in companies:
+            if comp.id == p.company_id:
+                c_name = (comp.short_name or comp.official_title or '')[:30]
+                break
+        return {
+            'id': p.id, 'name': p.full_name, 'company': c_name,
+            'type': kind, 'daysLeft': days_left,
+            'date': (p.training_validity_date if kind == 'training' else p.health_validity_date).isoformat()
+        }
+
+    expiring_training = []
+    expiring_health   = []
+    overdue_training  = []
+    overdue_health    = []
+
+    if user_company_ids:
+        base_q = Personnel.query.filter(Personnel.company_id.in_(user_company_ids))
+        for p in base_q.filter(Personnel.training_validity_date != None).all():
+            d = (p.training_validity_date - now).days
+            if d < 0:
+                overdue_training.append(p_to_dict(p, 'training', d))
+            elif d <= 30:
+                expiring_training.append(p_to_dict(p, 'training', d))
+        for p in base_q.filter(Personnel.health_validity_date != None).all():
+            d = (p.health_validity_date - now).days
+            if d < 0:
+                overdue_health.append(p_to_dict(p, 'health', d))
+            elif d <= 30:
+                expiring_health.append(p_to_dict(p, 'health', d))
+
+    expiring_training.sort(key=lambda x: x['daysLeft'])
+    expiring_health.sort(key=lambda x: x['daysLeft'])
+    overdue_training.sort(key=lambda x: x['daysLeft'])
+    overdue_health.sort(key=lambda x: x['daysLeft'])
+
+    # ── Training & health global stats ────────────────────────────
+    pq = Personnel.query.filter(Personnel.company_id.in_(user_company_ids)) if user_company_ids else Personnel.query.filter(Personnel.id == -1)
+    trained       = pq.filter(Personnel.training_validity_date > now).count()
+    exp_train     = pq.filter(Personnel.training_validity_date <= now, Personnel.training_validity_date != None).count()
+    never_trained = pq.filter(Personnel.training_validity_date == None).count()
+    healthy       = pq.filter(Personnel.health_validity_date > now).count()
+    exp_health    = pq.filter(Personnel.health_validity_date <= now, Personnel.health_validity_date != None).count()
+    never_exam    = pq.filter(Personnel.health_validity_date == None).count()
+
+    # ── Danger class distribution ──────────────────────────────────
+    danger_dist = db.session.query(DangerClass.name, func.count(Company.id)) \
+        .join(NaceCode).join(Company).filter(Company.id.in_(user_company_ids)) \
+        .group_by(DangerClass.name).all() if user_company_ids else []
+
+    # ── Risk distribution ──────────────────────────────────────────
+    risk_dist = db.session.query(RiskAssessment.initial_risk_level, func.count(RiskAssessment.id)) \
+        .filter(RiskAssessment.company_id.in_(user_company_ids)) \
+        .group_by(RiskAssessment.initial_risk_level).all() if user_company_ids else []
+
+    # ── Monthly service plan (assignments this month) ─────────────
+    month_start = now.replace(day=1)
+    import calendar
+    month_end   = now.replace(day=calendar.monthrange(now.year, now.month)[1])
+    assignments_month = []
+    if user_company_ids:
+        for a in Assignment.query.filter(
+            Assignment.company_id.in_(user_company_ids)
+        ).all():
+            dt = a.assignment_date if hasattr(a, 'assignment_date') and a.assignment_date else None
+            comp_name = ''
+            for comp in companies:
+                if comp.id == a.company_id:
+                    comp_name = (comp.short_name or comp.official_title or '')[:30]
+                    break
+            assignments_month.append({
+                'id': a.id,
+                'company': comp_name,
+                'type': a.assignment_type.value if a.assignment_type else '',
+                'date': dt.isoformat() if dt else None,
+            })
 
     return jsonify({
         'overview': {
-            'totalCompanies': total_companies,
+            'totalCompanies': len(companies),
             'totalPersonnel': total_personnel,
-            'activeProfessionals': active_professionals
+            'activeProfessionals': active_professionals,
+            'avgCompliance': avg_compliance,
+            'expiringNext30': len(expiring_training) + len(expiring_health),
+            'overdueCount': len(overdue_training) + len(overdue_health),
         },
-        'dangerDistribution': [{'name': name, 'value': count} for name, count in danger_dist],
+        'companyScores': company_scores,
+        'dangerDistribution': [{'name': n, 'value': v} for n, v in danger_dist],
         'trainingStats': [
-            {'name': 'Eğitimi Tam', 'value': trained},
-            {'name': 'Süresi Dolan', 'value': expired},
-            {'name': 'Eğitim Almamış', 'value': never_trained}
+            {'name': 'Geçerli', 'value': trained, 'color': '#10b981'},
+            {'name': 'Süresi Dolmuş', 'value': exp_train, 'color': '#f59e0b'},
+            {'name': 'Hiç Almamış', 'value': never_trained, 'color': '#e11d48'},
         ],
         'healthStats': [
-            {'name': 'Muayenesi Tam', 'value': healthy},
-            {'name': 'Geciken', 'value': overdue_health},
-            {'name': 'Henüz Yapılmamış', 'value': never_exam}
+            {'name': 'Geçerli', 'value': healthy, 'color': '#10b981'},
+            {'name': 'Süresi Dolmuş', 'value': exp_health, 'color': '#f59e0b'},
+            {'name': 'Yapılmamış', 'value': never_exam, 'color': '#e11d48'},
         ],
-        'riskDistribution': [{'name': name, 'value': count} for name, count in risk_dist],
-        'recentCompanies': [{
-            'id': c.id,
-            'unvan': c.official_title,
-            'date': c.created_at.isoformat() if c.created_at else None
-        } for c in recent_companies]
+        'riskDistribution': [{'name': n, 'value': v} for n, v in risk_dist],
+        'expiringTraining': expiring_training[:20],
+        'expiringHealth':   expiring_health[:20],
+        'overdueTraining':  overdue_training[:10],
+        'overdueHealth':    overdue_health[:10],
+        'assignments':      assignments_month[:50],
     }), 200
 
 # ==========================================
