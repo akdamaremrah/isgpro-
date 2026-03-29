@@ -709,13 +709,19 @@ def setup_db():
         db.create_all()
         # ── Auth migration: add user_id to companies + hash plain-text passwords ──
         try:
-            from werkzeug.security import generate_password_hash
-            from sqlalchemy import text
+            from sqlalchemy import text, inspect as sa_inspect
+            is_sqlite = 'sqlite' in str(db.engine.url)
             with db.engine.connect() as conn:
-                # Add user_id column if not exists
-                conn.execute(text(
-                    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)"
-                ))
+                # Check if user_id column already exists
+                inspector = sa_inspect(db.engine)
+                cols = [c['name'] for c in inspector.get_columns('companies')]
+                if 'user_id' not in cols:
+                    if is_sqlite:
+                        conn.execute(text("ALTER TABLE companies ADD COLUMN user_id INTEGER"))
+                    else:
+                        conn.execute(text(
+                            "ALTER TABLE companies ADD COLUMN user_id INTEGER REFERENCES users(id)"
+                        ))
                 # Assign all unowned companies to first user
                 result = conn.execute(text("SELECT id, password FROM users ORDER BY id LIMIT 1"))
                 row = result.fetchone()
@@ -732,7 +738,7 @@ def setup_db():
                         ), {"pwd": hashed, "uid": uid})
                 conn.commit()
         except Exception as e:
-            app.logger.warning(f"Auth migration skipped (SQLite or already done): {e}")
+            app.logger.warning(f"Auth migration: {e}")
         seed_data()
 
 # --- PROFESSIONALS ROUTES ---
